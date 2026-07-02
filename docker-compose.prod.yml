@@ -4,8 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
-    ports:
-      - "${FRONTEND_PORT:-80}:80"
     environment:
-      - BACKEND_URL=${BACKEND_URL}
+      - BACKEND_URL=https://api.veritariffai.co
     restart: unless-stopped
+    networks:
+      - brokerai-web
+
+networks:
+  brokerai-web:
+    external: true

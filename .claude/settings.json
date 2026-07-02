@@ -6,6 +6,9 @@
       "Bash(rtk tree:*)",
       "Bash(rtk read:*)",
       "Bash(chmod +x /Users/behnam/vscode/operating_system_cb_front/deploy.sh)"
+    ],
+    "additionalDirectories": [
+      "/Users/behnam/vscode/operating_system_cb_back/nginx/conf.d"
     ]
   },
   "hooks": {
