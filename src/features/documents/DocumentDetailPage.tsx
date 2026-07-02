@@ -32,13 +32,12 @@ export function DocumentDetailPage() {
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('commercial_invoice');
   const [reassignShipment, setReassignShipment] = useState('');
-  const [confirmStatusOpen, setConfirmStatusOpen] = useState(false);
 
   const { data: doc, isLoading: docLoading } = useQuery({
     queryKey: queryKeys.document(id!),
     queryFn: () => documentsApi.get(id!).then((r) => r.data),
-    refetchInterval: (data) =>
-      data?.status && PROCESSING_STATUSES.has(data.status) ? 10_000 : false,
+    refetchInterval: (query) =>
+      query.state.data?.status && PROCESSING_STATUSES.has(query.state.data.status) ? 10_000 : false,
   });
 
   const { data: classification, isLoading: classLoading } = useQuery({

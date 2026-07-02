@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Ship, FileInput, Tag, AlertCircle, Mail } from 'lucide-react';
-import { workspaceApi, documentsApi } from '@/api';
+import { workspaceApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

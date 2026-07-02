@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUpload } from '@/hooks/useUpload';
 import { formatBytes, formatRelative, shortId } from '@/lib/utils';
-import { DOC_TYPE_LABELS, ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from '@/lib/constants';
+import { ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from '@/lib/constants';
 import type { DocumentStatus } from '@/types';
 
 const STATUS_FILTERS: { label: string; value: DocumentStatus | 'all' }[] = [
