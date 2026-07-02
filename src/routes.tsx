@@ -5,6 +5,7 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage';
+import { LandingPage } from '@/features/landing/LandingPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { DocumentListPage } from '@/features/documents/DocumentListPage';
 import { DocumentDetailPage } from '@/features/documents/DocumentDetailPage';
@@ -14,6 +15,9 @@ import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
 import { UserManagementPage } from '@/features/settings/UserManagementPage';
 
 export const router = createBrowserRouter([
+  // Landing
+  { path: '/', element: <LandingPage /> },
+
   // Public routes
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
@@ -27,7 +31,7 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { path: '/', element: <DashboardPage /> },
+          { path: '/dashboard', element: <DashboardPage /> },
           { path: '/documents', element: <DocumentListPage /> },
           { path: '/documents/:id', element: <DocumentDetailPage /> },
           { path: '/shipments', element: <ShipmentListPage /> },

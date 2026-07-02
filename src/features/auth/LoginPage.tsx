@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>;
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname ?? '/';
+  const from = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
 
   if (session.hasToken()) return <Navigate to="/" replace />;
 

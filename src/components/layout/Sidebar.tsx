@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', to: '/' },
+  { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard' },
   { icon: Files, label: 'Documents', to: '/documents' },
   { icon: Ship, label: 'Shipments', to: '/shipments' },
   { icon: Mail, label: 'Email', to: '/email' },
@@ -26,7 +26,7 @@ export function Sidebar() {
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
