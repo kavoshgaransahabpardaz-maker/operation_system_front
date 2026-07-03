@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { formatBytes, formatDate, shortId } from '@/lib/utils';
 import { DOC_TYPE_LABELS } from '@/lib/constants';
+import { DocumentFieldsPanel } from '@/features/fields/DocumentFieldsPanel';
 import type { DocumentType } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -244,6 +245,9 @@ export function DocumentDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Extracted fields */}
+      <DocumentFieldsPanel documentId={id!} documentStatus={doc.status} />
 
       {/* Reassociate to shipment */}
       <div className="rounded-xl border bg-background p-6">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Ship } from 'lucide-react';
-import { shipmentsApi } from '@/api';
+import { shipmentsApi, flagsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatRelative, shortId } from '@/lib/utils';
-import type { ShipmentStatus } from '@/types';
+import type { Shipment, ShipmentStatus } from '@/types';
 
 const STATUS_FILTERS: { label: string; value: ShipmentStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -21,6 +21,26 @@ const STATUS_FILTERS: { label: string; value: ShipmentStatus | 'all' }[] = [
   { label: 'Complete', value: 'complete' },
   { label: 'On Hold', value: 'on_hold' },
 ];
+
+function OpenFlagCount({ shipment }: { shipment: Shipment }) {
+  const { data: flags } = useQuery({
+    queryKey: queryKeys.shipmentFlags(shipment.id, 'open'),
+    queryFn: () => flagsApi.listByShipment(shipment.id, 'open').then((r) => r.data),
+  });
+
+  const count = flags?.length ?? 0;
+
+  return (
+    <span
+      className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium tabular-nums ${
+        count > 0 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'
+      }`}
+      title={count > 0 ? `${count} open issue${count !== 1 ? 's' : ''}` : 'No open issues'}
+    >
+      {count}
+    </span>
+  );
+}
 
 export function ShipmentListPage() {
   const navigate = useNavigate();
@@ -63,6 +83,7 @@ export function ShipmentListPage() {
                 <TableHead>Shipment ID</TableHead>
                 <TableHead>References</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Open Flags</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
               </TableRow>
@@ -87,6 +108,9 @@ export function ShipmentListPage() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={s.status} />
+                  </TableCell>
+                  <TableCell>
+                    <OpenFlagCount shipment={s} />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatRelative(s.created_at)}

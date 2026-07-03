@@ -3,9 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload, Tag, Edit, Link as LinkIcon, ArrowLeftRight, Plus, RefreshCw, Mail,
+  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { workspaceApi, shipmentsApi } from '@/api';
+import { workspaceApi, shipmentsApi, flagsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
@@ -23,7 +24,9 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { formatRelative, shortId } from '@/lib/utils';
-import { DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS } from '@/lib/constants';
+import { DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS, FIELD_NAME_LABELS } from '@/lib/constants';
+import { FlagListPanel } from '@/features/flags/FlagListPanel';
+import { ShipmentFieldsPanel } from '@/features/fields/ShipmentFieldsPanel';
 import type { ShipmentStatus, ActivityAction } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -45,6 +48,28 @@ const ACTION_META: Record<ActivityAction, { icon: typeof Upload; label: (d: Reco
     label: (d) => `Status changed to ${SHIPMENT_STATUS_LABELS[d.status as ShipmentStatus] ?? d.status}`,
   },
   email_synced: { icon: Mail, label: () => 'Email sync completed' },
+  field_extracted: { icon: Scan, label: () => 'Fields extracted from document' },
+  field_confirmed: {
+    icon: CheckCircle,
+    label: (d) => `Field ${FIELD_NAME_LABELS[d.field_name as keyof typeof FIELD_NAME_LABELS] ?? d.field_name} confirmed`,
+  },
+  field_corrected: {
+    icon: PenLine,
+    label: (d) => `Field ${FIELD_NAME_LABELS[d.field_name as keyof typeof FIELD_NAME_LABELS] ?? d.field_name} corrected`,
+  },
+  flag_created: {
+    icon: AlertTriangle,
+    label: (d) => `Issue detected: ${d.flag_title ?? 'unknown'}`,
+  },
+  flag_resolved: {
+    icon: CheckCheck,
+    label: (d) => `Issue resolved: ${d.flag_title ?? 'unknown'}`,
+  },
+  comparison_run: {
+    icon: GitCompare,
+    label: (d) => `Comparison run — ${d.issue_count ?? 0} issue(s) found`,
+  },
+  settings_updated: { icon: Settings, label: () => 'Org settings updated' },
 };
 
 export function ShipmentDetailPage() {
@@ -63,6 +88,11 @@ export function ShipmentDetailPage() {
     queryFn: () => workspaceApi.activityLog(id!).then((r) => r.data),
   });
 
+  const { data: flags } = useQuery({
+    queryKey: queryKeys.shipmentFlags(id!),
+    queryFn: () => flagsApi.listByShipment(id!).then((r) => r.data),
+  });
+
   const statusMutation = useMutation({
     mutationFn: (status: ShipmentStatus) => shipmentsApi.updateStatus(id!, status),
     onSuccess: () => {
@@ -78,6 +108,8 @@ export function ShipmentDetailPage() {
 
   if (isLoading) return <Spinner size="lg" className="mt-20" />;
   if (!detail) return <p className="mt-20 text-center text-muted-foreground">Shipment not found.</p>;
+
+  const openFlags = flags?.filter((f) => f.status === 'open') ?? [];
 
   return (
     <div className="space-y-6">
@@ -101,6 +133,22 @@ export function ShipmentDetailPage() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Open flags banner */}
+      {openFlags.length > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3">
+          <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+          <p className="text-sm text-red-800 font-medium">
+            {openFlags.length} open issue{openFlags.length !== 1 ? 's' : ''} — review required
+          </p>
+          <a
+            href="#flags-panel"
+            className="ml-auto text-sm text-red-700 underline hover:no-underline"
+          >
+            Review
+          </a>
+        </div>
+      )}
 
       {/* References */}
       <div className="flex flex-wrap gap-2">
@@ -164,6 +212,12 @@ export function ShipmentDetailPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Flags panel */}
+      <FlagListPanel shipmentId={id!} />
+
+      {/* Extracted fields panel */}
+      <ShipmentFieldsPanel shipmentId={id!} />
 
       {/* Activity log */}
       <div className="rounded-xl border bg-background p-6">

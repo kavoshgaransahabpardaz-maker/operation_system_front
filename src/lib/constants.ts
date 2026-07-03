@@ -1,4 +1,7 @@
-import type { DocumentStatus, DocumentType, ShipmentStatus, ReferenceType, UserRole } from '@/types';
+import type {
+  DocumentStatus, DocumentType, ShipmentStatus, ReferenceType, UserRole,
+  FieldName, FieldStatus, FlagType, FlagSeverity,
+} from '@/types';
 
 export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   commercial_invoice: 'Commercial Invoice',
@@ -69,6 +72,65 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Admin',
   manager: 'Manager',
   operator: 'Operator',
+};
+
+export const FIELD_NAME_LABELS: Record<FieldName, string> = {
+  party_shipper: 'Shipper',
+  party_consignee: 'Consignee',
+  invoice_value: 'Invoice Value',
+  currency: 'Currency',
+  gross_weight: 'Gross Weight',
+  net_weight: 'Net Weight',
+  quantity: 'Quantity',
+  hs_code: 'HS Code',
+  stated_origin: 'Country of Origin',
+  incoterm: 'Incoterm',
+  invoice_date: 'Invoice Date',
+  shipment_date: 'Shipment Date',
+  reference: 'Reference Number',
+};
+
+// Zero-tolerance fields — any mismatch is always critical
+export const ZERO_TOLERANCE_FIELDS = new Set<FieldName>([
+  'hs_code', 'stated_origin', 'currency', 'incoterm',
+]);
+
+export const FLAG_TYPE_LABELS: Record<FlagType, string> = {
+  missing_document: 'Missing Document',
+  missing_field: 'Missing Field',
+  mismatch: 'Value Mismatch',
+  low_confidence: 'Low Confidence',
+  hs_inconsistency: 'HS Code Inconsistency',
+};
+
+export const FLAG_SEVERITY_COLORS: Record<FlagSeverity, string> = {
+  critical: 'bg-red-100 text-red-700 border-red-200',
+  warning: 'bg-amber-100 text-amber-700 border-amber-200',
+  info: 'bg-blue-50 text-blue-700 border-blue-200',
+};
+
+export const FLAG_SEVERITY_ICON_COLORS: Record<FlagSeverity, string> = {
+  critical: 'text-red-500',
+  warning: 'text-amber-500',
+  info: 'text-blue-400',
+};
+
+export const FLAG_SEVERITY_LABELS: Record<FlagSeverity, string> = {
+  critical: 'Critical',
+  warning: 'Warning',
+  info: 'Info',
+};
+
+export const FIELD_STATUS_LABELS: Record<FieldStatus, string> = {
+  extracted: 'Extracted',
+  confirmed: 'Confirmed',
+  corrected: 'Corrected',
+};
+
+export const FIELD_STATUS_COLORS: Record<FieldStatus, string> = {
+  extracted: 'bg-gray-100 text-gray-600',
+  confirmed: 'bg-green-100 text-green-700',
+  corrected: 'bg-purple-100 text-purple-700',
 };
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB

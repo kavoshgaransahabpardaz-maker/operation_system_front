@@ -4,3 +4,5 @@ export { ConfidenceBadge } from './ConfidenceBadge';
 export { FileIcon } from './FileIcon';
 export { EmptyState } from './EmptyState';
 export { ReferenceChip } from './ReferenceChip';
+export { FieldStatusBadge } from './FieldStatusBadge';
+export { SeverityBadge } from './SeverityBadge';

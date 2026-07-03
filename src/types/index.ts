@@ -40,9 +40,115 @@ export type ActivityAction =
   | 'document_reassociated'
   | 'shipment_created'
   | 'shipment_status_updated'
-  | 'email_synced';
+  | 'email_synced'
+  | 'field_extracted'
+  | 'field_confirmed'
+  | 'field_corrected'
+  | 'flag_created'
+  | 'flag_resolved'
+  | 'comparison_run'
+  | 'settings_updated';
 
-// ── Models ─────────────────────────────────────────────────────────────────
+// ── Field extraction ───────────────────────────────────────────────────────
+
+export type FieldName =
+  | 'party_shipper'
+  | 'party_consignee'
+  | 'invoice_value'
+  | 'currency'
+  | 'gross_weight'
+  | 'net_weight'
+  | 'quantity'
+  | 'hs_code'
+  | 'stated_origin'
+  | 'incoterm'
+  | 'invoice_date'
+  | 'shipment_date'
+  | 'reference';
+
+export type FieldStatus = 'extracted' | 'confirmed' | 'corrected';
+
+export type FieldType = 'string' | 'decimal' | 'date' | 'iso_code';
+
+export interface ExtractedField {
+  id: string;
+  document_id: string;
+  shipment_id: string | null;
+  org_id: string;
+  field_name: FieldName;
+  value_raw: string;
+  value_normalized: string | null;
+  field_type: FieldType;
+  confidence: number;
+  page_number: number | null;
+  status: FieldStatus;
+  confirmed_at: string | null;
+  confirmed_by: string | null;
+  corrected_value: string | null;
+  corrected_by: string | null;
+  corrected_at: string | null;
+  created_at: string;
+}
+
+// ── Flags & mismatches ─────────────────────────────────────────────────────
+
+export type FlagType =
+  | 'missing_document'
+  | 'missing_field'
+  | 'mismatch'
+  | 'low_confidence'
+  | 'hs_inconsistency';
+
+export type FlagSeverity = 'critical' | 'warning' | 'info';
+
+export type FlagStatus = 'open' | 'resolved';
+
+export type FlagDecision = 'accepted' | 'overridden' | 'dismissed';
+
+export interface ConflictingValue {
+  document_id: string;
+  field_name: FieldName;
+  value_raw: string;
+  page_number: number | null;
+}
+
+export interface Flag {
+  id: string;
+  shipment_id: string;
+  org_id: string;
+  flag_type: FlagType;
+  severity: FlagSeverity;
+  title: string;
+  description: string;
+  conflicting_values: ConflictingValue[] | null;
+  status: FlagStatus;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export interface FlagResolution {
+  id: string;
+  flag_id: string;
+  resolved_by: string;
+  decision: FlagDecision;
+  chosen_value: string | null;
+  note: string | null;
+  created_at: string;
+}
+
+// ── Org settings ───────────────────────────────────────────────────────────
+
+export interface OrgSettings {
+  id: string;
+  org_id: string;
+  weight_qty_tolerance_pct: number;
+  value_tolerance_pct: number;
+  name_match_threshold: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Existing models ────────────────────────────────────────────────────────
 
 export interface User {
   id: string;

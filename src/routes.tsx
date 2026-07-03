@@ -13,6 +13,7 @@ import { ShipmentListPage } from '@/features/shipments/ShipmentListPage';
 import { ShipmentDetailPage } from '@/features/shipments/ShipmentDetailPage';
 import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
 import { UserManagementPage } from '@/features/settings/UserManagementPage';
+import { OrgSettingsPage } from '@/features/settings/OrgSettingsPage';
 
 export const router = createBrowserRouter([
   // Landing
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
           { path: '/shipments/:id', element: <ShipmentDetailPage /> },
           { path: '/email', element: <EmailConnectionsPage /> },
           { path: '/settings/users', element: <UserManagementPage /> },
+          { path: '/settings/org', element: <OrgSettingsPage /> },
         ],
       },
     ],
