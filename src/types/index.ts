@@ -109,6 +109,12 @@ export interface ShipmentReference {
   ref_value: string;
 }
 
+// Workspace endpoint returns references without id
+export interface ShipmentReferenceOut {
+  ref_type: ReferenceType;
+  ref_value: string;
+}
+
 export interface Shipment {
   id: string;
   org_id: string;
@@ -135,7 +141,7 @@ export interface ShipmentDetail {
   status: ShipmentStatus;
   created_at: string;
   updated_at: string;
-  references: ShipmentReference[];
+  references: ShipmentReferenceOut[];
   documents: DocumentSummary[];
 }
 

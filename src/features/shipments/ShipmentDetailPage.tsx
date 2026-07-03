@@ -105,7 +105,7 @@ export function ShipmentDetailPage() {
       {/* References */}
       <div className="flex flex-wrap gap-2">
         {detail.references.map((ref) => (
-          <ReferenceChip key={ref.id} ref_type={ref.ref_type} ref_value={ref.ref_value} />
+          <ReferenceChip key={`${ref.ref_type}:${ref.ref_value}`} ref_type={ref.ref_type} ref_value={ref.ref_value} />
         ))}
       </div>
 

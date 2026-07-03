@@ -12,7 +12,7 @@ export const emailsApi = {
   list: () => apiClient.get<MailboxConnection[]>('/api/v1/email/connections'),
 
   sync: (connectionId: string) =>
-    apiClient.post<{ status: string; connection_id: string }>(
+    apiClient.post<Record<string, never>>(
       `/api/v1/email/connections/${connectionId}/sync`
     ),
 
