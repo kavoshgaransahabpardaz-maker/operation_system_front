@@ -1,16 +1,8 @@
 import { Link } from 'react-router-dom';
 import {
-  FileText,
-  Zap,
-  Mail,
-  Shield,
-  Users,
-  BarChart3,
-  ChevronRight,
-  Check,
-  Ship,
-  Tag,
-  ArrowRight,
+  FileText, Zap, Mail, Shield, Users, BarChart3, ChevronRight, Check,
+  Ship, Tag, ArrowRight, AlertTriangle, GitCompare, Newspaper,
+  Search, Bell, Lightbulb,
 } from 'lucide-react';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -27,13 +19,25 @@ const FEATURES = [
     icon: FileText,
     title: 'Intelligent Document Classification',
     description:
-      'Upload any shipping document and our AI classifies it instantly — commercial invoices, bills of lading, certificates of origin, and more. Confidence scores show you exactly how certain the system is.',
+      'Upload any shipping document and our AI classifies it instantly — commercial invoices, bills of lading, certificates of origin, CMR notes, mill certificates, and more. Confidence scores show exactly how certain the system is.',
   },
   {
     icon: Ship,
     title: 'Shipment Workspace',
     description:
-      'Every shipment gets a unified workspace. All related documents, references, and activity logs in one place. Track B/L, AWB, PO, container, and invoice numbers across your entire operation.',
+      'Every shipment gets a unified workspace. All related documents, extracted fields, flags, and activity logs in one place. Track B/L, AWB, PO, container, and invoice numbers across your entire operation.',
+  },
+  {
+    icon: GitCompare,
+    title: 'Field Extraction & Cross-Check',
+    description:
+      'Key fields — shipper, consignee, invoice value, HS code, country of origin, incoterm — are extracted from every document. Mismatches and zero-tolerance discrepancies are flagged automatically.',
+  },
+  {
+    icon: AlertTriangle,
+    title: 'Intelligent Issue Flagging',
+    description:
+      'Missing documents, field mismatches, low-confidence extractions, and HS code inconsistencies surface as ranked flags. Each flag links directly to its source page in the original document — one click, no guessing.',
   },
   {
     icon: Mail,
@@ -42,35 +46,35 @@ const FEATURES = [
       'Connect Gmail, Microsoft 365, Outlook, or any IMAP mailbox. Attachments are automatically imported, classified, and matched to shipments — no manual sorting required.',
   },
   {
-    icon: Zap,
-    title: 'Automated OCR Pipeline',
+    icon: Newspaper,
+    title: 'Trade Intelligence Feed',
     description:
-      'Documents are scanned, extracted, and processed in the background the moment they arrive. Real-time status updates keep you informed at every step.',
+      'Stay ahead of tariff changes, sanctions updates, and trade regulations relevant to your shipments. Events are matched to your HS codes, lanes, and parties — not a generic news feed.',
+  },
+  {
+    icon: Lightbulb,
+    title: 'AI-Assisted Resolution',
+    description:
+      'When flags need a decision, the system proposes values with citations from source documents — "3 of 4 documents state EUR". You review, choose, and confirm. Nothing is auto-resolved without your approval.',
   },
   {
     icon: Shield,
-    title: 'Duplicate Detection',
+    title: 'Full Audit Trail',
     description:
-      'Automatically identifies and flags duplicate documents before they create problems. Every upload is cross-referenced against existing records.',
+      'Every extraction, correction, flag resolution, and status change is logged with who did it and when. Resolved flags never disappear — they collapse into an audit section. Always audit-ready.',
   },
   {
     icon: Users,
     title: 'Team Management',
     description:
-      'Role-based access control for Admins, Managers, and Operators. Invite team members, manage permissions, and maintain a full activity trail for compliance.',
+      'Role-based access control for Admins, Managers, and Operators. Invite team members, manage permissions, and maintain a complete activity trail for compliance.',
   },
 ];
 
 const DOCUMENT_TYPES = [
-  'Commercial Invoice',
-  'Packing List',
-  'Bill of Lading',
-  'Air Waybill',
-  'Certificate of Origin',
-  'Insurance Certificate',
-  'Customs Declaration',
-  'Purchase Order',
-  'Delivery Order',
+  'Commercial Invoice', 'Packing List', 'Bill of Lading', 'Air Waybill',
+  'Certificate of Origin', 'Insurance Certificate', 'Customs Declaration',
+  'Purchase Order', 'Delivery Order', 'Mill Certificate', "Supplier's Declaration", 'CMR Consignment Note',
 ];
 
 const HOW_IT_WORKS = [
@@ -81,13 +85,13 @@ const HOW_IT_WORKS = [
   },
   {
     step: '02',
-    title: 'AI classifies instantly',
-    description: 'Our pipeline runs OCR and classification automatically. Each document gets a type, confidence score, and is matched to the right shipment.',
+    title: 'AI extracts and cross-checks',
+    description: 'OCR, classification, field extraction, and cross-document comparison run automatically. Mismatches and missing items surface as ranked flags with source links.',
   },
   {
     step: '03',
-    title: 'Review and action',
-    description: 'Low-confidence items are flagged for human review. Override any classification with one click. Full audit trail kept automatically.',
+    title: 'Review, decide, and clear',
+    description: 'Work through flagged issues with source pages one click away. Confirm fields, resolve flags, and mark the shipment clear — every action logged.',
   },
 ];
 
@@ -100,11 +104,11 @@ export function LandingPage() {
       {/* ── Nav ── */}
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <span className="text-base font-semibold tracking-tight">BrokerAI</span>
+          <span className="text-base font-semibold tracking-tight">Veritariff</span>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">How it works</a>
-            <a href="#documents" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Documents</a>
+            <a href="#intel" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Intelligence</a>
             <Link
               to="/login"
               className="rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
@@ -119,17 +123,17 @@ export function LandingPage() {
       <section className="mx-auto max-w-6xl px-6 pb-24 pt-36 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-600 mb-8">
           <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-          Built for customs brokers & freight forwarders
+          Built for customs brokers &amp; freight forwarders
         </div>
 
         <h1 className="mx-auto max-w-3xl text-5xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-6xl">
-          Shipping documents,{' '}
-          <span className="text-gray-400">handled automatically.</span>
+          Shipping compliance,{' '}
+          <span className="text-gray-400">verified automatically.</span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-lg text-gray-500 leading-relaxed">
-          BrokerAI classifies, matches, and organises every document in your supply chain —
-          from the moment it arrives to the moment it's filed.
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 leading-relaxed">
+          Veritariff classifies documents, extracts key fields, cross-checks for mismatches, and flags issues
+          — with every value traceable to its exact source page. Plus live trade intelligence matched to your shipments.
         </p>
 
         <div className="mt-10 flex items-center justify-center gap-4">
@@ -160,7 +164,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Dashboard preview ── */}
+      {/* ── App preview ── */}
       <section className="mx-auto max-w-6xl px-6 py-24">
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
           {/* Mock browser chrome */}
@@ -169,18 +173,20 @@ export function LandingPage() {
             <span className="h-3 w-3 rounded-full bg-amber-400" />
             <span className="h-3 w-3 rounded-full bg-green-400" />
             <div className="mx-4 flex-1 rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-400">
-              app.brokerai.co
+              app.veritariff.co
             </div>
           </div>
 
           {/* Mock dashboard */}
           <div className="grid grid-cols-12 divide-x divide-gray-200">
             {/* Sidebar */}
-            <div className="col-span-2 bg-white p-4 space-y-1">
-              {['Dashboard', 'Documents', 'Shipments', 'Email', 'Users'].map((item, i) => (
+            <div className="col-span-2 bg-slate-900 p-3 space-y-0.5">
+              {['Dashboard', 'Documents', 'Shipments', 'Email', 'Intelligence'].map((item, i) => (
                 <div
                   key={item}
-                  className={`rounded-md px-3 py-2 text-xs font-medium ${i === 0 ? 'bg-gray-900 text-white' : 'text-gray-500'}`}
+                  className={`rounded-md px-3 py-2 text-xs font-medium ${
+                    i === 0 ? 'bg-white/10 text-white' : 'text-slate-400'
+                  }`}
                 >
                   {item}
                 </div>
@@ -188,39 +194,45 @@ export function LandingPage() {
             </div>
 
             {/* Main content */}
-            <div className="col-span-10 p-6 space-y-6">
+            <div className="col-span-10 p-5 space-y-5">
               {/* Stat cards */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-6 gap-3">
                 {[
-                  { label: 'Total Shipments', value: '248', color: 'text-gray-900' },
-                  { label: 'Imported Today', value: '34', color: 'text-gray-900' },
-                  { label: 'Needs Classification', value: '7', color: 'text-amber-600' },
-                  { label: 'Needs Review', value: '3', color: 'text-red-500' },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="rounded-xl border border-gray-200 bg-white p-4">
-                    <p className="text-xs text-gray-500">{label}</p>
-                    <p className={`mt-1 text-2xl font-semibold ${color}`}>{value}</p>
+                  { label: 'Total Shipments', value: '248', color: 'text-gray-900', bg: '' },
+                  { label: 'Imported Today', value: '34', color: 'text-gray-900', bg: '' },
+                  { label: 'Needs Classification', value: '7', color: 'text-gray-900', bg: '' },
+                  { label: 'Needs Review', value: '3', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+                  { label: 'Critical Issues', value: '2', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+                  { label: 'Fields to Review', value: '11', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+                ].map(({ label, value, color, bg }) => (
+                  <div key={label} className={`rounded-xl border p-3 ${bg || 'bg-white border-gray-200'}`}>
+                    <p className="text-[10px] text-gray-500 leading-tight">{label}</p>
+                    <p className={`mt-1 text-xl font-bold tabular-nums ${color}`}>{value}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Mock table */}
+              {/* Mock shipment issue */}
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+                <p className="text-xs font-medium text-red-800">2 open issues — review required</p>
+                <span className="ml-auto text-xs text-red-600 underline cursor-pointer">Review</span>
+              </div>
+
+              {/* Mock flag */}
               <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-                <div className="border-b border-gray-100 px-4 py-3 text-xs font-medium text-gray-500">
-                  Recent Documents
+                <div className="border-b border-gray-100 px-4 py-2.5 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-700">Issues (Flags)</span>
+                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">2 open</span>
                 </div>
                 {[
-                  { name: 'Invoice_MAEU_2024.pdf', type: 'Commercial Invoice', status: 'Matched', conf: '96%', color: 'text-green-600 bg-green-50' },
-                  { name: 'BL_COSCO_Shanghai.pdf', type: 'Bill of Lading', status: 'Classified', conf: '89%', color: 'text-green-600 bg-green-50' },
-                  { name: 'PackingList_Dec.pdf', type: 'Packing List', status: 'Needs Review', conf: '54%', color: 'text-amber-600 bg-amber-50' },
-                  { name: 'unknown_doc_4.jpg', type: '—', status: 'OCR Pending', conf: '—', color: 'text-blue-600 bg-blue-50' },
+                  { title: 'Invoice value mismatch', doc: 'commercial_invoice vs packing_list', sev: 'Critical', sevColor: 'bg-red-100 text-red-700' },
+                  { title: 'Missing packing list', doc: 'No packing list attached', sev: 'Warning', sevColor: 'bg-amber-100 text-amber-700' },
                 ].map((row) => (
-                  <div key={row.name} className="flex items-center gap-4 border-b border-gray-50 px-4 py-3 text-xs last:border-0">
-                    <FileText className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-                    <span className="flex-1 font-medium text-gray-700 truncate">{row.name}</span>
-                    <span className="w-32 text-gray-500">{row.type}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${row.color}`}>{row.status}</span>
-                    <span className="w-10 text-right tabular-nums text-gray-500">{row.conf}</span>
+                  <div key={row.title} className="flex items-center gap-3 border-b border-gray-50 px-4 py-3 text-xs last:border-0">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${row.sevColor}`}>{row.sev}</span>
+                    <span className="font-medium text-gray-800 flex-1">{row.title}</span>
+                    <span className="text-gray-400 truncate">{row.doc}</span>
                   </div>
                 ))}
               </div>
@@ -233,7 +245,7 @@ export function LandingPage() {
       <section id="features" className="mx-auto max-w-6xl px-6 py-24">
         <div className="mb-16 text-center">
           <h2 className="text-3xl font-semibold tracking-tight">Everything your operation needs</h2>
-          <p className="mt-3 text-gray-500">One platform for the entire document lifecycle.</p>
+          <p className="mt-3 text-gray-500">One platform for the entire compliance lifecycle.</p>
         </div>
 
         <div className="grid gap-px bg-gray-200 sm:grid-cols-2 lg:grid-cols-3 rounded-2xl overflow-hidden">
@@ -254,12 +266,12 @@ export function LandingPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-semibold tracking-tight">How it works</h2>
-            <p className="mt-3 text-gray-500">From upload to filed — in seconds.</p>
+            <p className="mt-3 text-gray-500">From upload to cleared — every step logged.</p>
           </div>
 
           <div className="grid gap-12 sm:grid-cols-3">
             {HOW_IT_WORKS.map(({ step, title, description }) => (
-              <div key={step} className="relative">
+              <div key={step}>
                 <p className="mb-4 text-5xl font-semibold text-gray-200">{step}</p>
                 <h3 className="mb-2 text-base font-semibold">{title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
@@ -267,30 +279,25 @@ export function LandingPage() {
             ))}
           </div>
 
-          {/* Processing pipeline visual */}
+          {/* Pipeline visual */}
           <div className="mt-20 overflow-hidden rounded-2xl border border-gray-200 bg-white p-8">
             <p className="mb-6 text-xs font-medium uppercase tracking-widest text-gray-400">Document pipeline</p>
             <div className="flex items-center gap-2 flex-wrap">
               {['Uploaded', 'OCR Pending', 'Processing', 'Classified', 'Matched'].map((stage, i, arr) => (
                 <div key={stage} className="flex items-center gap-2">
                   <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${
-                    i === 3
-                      ? 'bg-green-100 text-green-700'
-                      : i === 4
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-gray-100 text-gray-600'
+                    i === 3 ? 'bg-green-100 text-green-700'
+                    : i === 4 ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-100 text-gray-600'
                   }`}>
                     {i === 4 && <Check className="h-3.5 w-3.5" />}
                     {stage}
                   </div>
-                  {i < arr.length - 1 && (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
-                  )}
+                  {i < arr.length - 1 && <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />}
                 </div>
               ))}
             </div>
 
-            {/* Confidence levels */}
             <div className="mt-8 grid grid-cols-3 gap-4">
               {[
                 { label: 'High confidence', range: '≥ 70%', bar: 'bg-green-500', width: 'w-3/4', desc: 'Auto-matched to shipment' },
@@ -310,41 +317,111 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* ── Trade Intelligence ── */}
+      <section id="intel" className="mx-auto max-w-6xl px-6 py-24">
+        <div className="grid gap-16 lg:grid-cols-2 items-center">
+          <div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <Newspaper className="h-3.5 w-3.5" /> Trade Intelligence
+            </div>
+            <h2 className="text-3xl font-semibold tracking-tight">Stay ahead of regulatory changes</h2>
+            <p className="mt-4 text-gray-500 leading-relaxed">
+              Veritariff monitors tariff changes, sanctions updates, trade agreements, and market notices — and matches them to your actual shipments, HS codes, and trade lanes. Not a generic news feed.
+            </p>
+            <ul className="mt-8 space-y-4">
+              {[
+                { icon: Search, text: 'Semantic search across all trade intelligence events' },
+                { icon: Bell, text: 'Email and in-app alerts for events matching your interests' },
+                { icon: Ship, text: 'Intel tab inside each shipment — events matched to that specific shipment' },
+                { icon: AlertTriangle, text: 'Sanctions hits surface as critical flags, not buried news items' },
+              ].map(({ icon: Icon, text }) => (
+                <li key={text} className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+                    <Icon className="h-3.5 w-3.5 text-blue-600" />
+                  </div>
+                  <p className="text-sm text-gray-600">{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Mock intel card */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+            <p className="text-xs font-medium uppercase tracking-widest text-gray-400">Live example</p>
+
+            {[
+              {
+                type: 'Tariff Change', typeColor: 'bg-orange-100 text-orange-700',
+                title: 'EU raises anti-dumping duties on hot-rolled steel (HS 7208)',
+                reason: 'Matches HS 7208 — 4 of your active shipments',
+                impact: 'Impact 4/5',
+                impactColor: 'bg-orange-100 text-orange-700',
+              },
+              {
+                type: 'Trade Agreement', typeColor: 'bg-green-100 text-green-700',
+                title: 'UK–India FTA: preferential rates for textile chapters 50–63',
+                reason: 'Lane IN→GB — 2 open shipments',
+                impact: 'Impact 3/5',
+                impactColor: 'bg-amber-100 text-amber-700',
+              },
+            ].map((card) => (
+              <div key={card.title} className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${card.typeColor}`}>{card.type}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${card.impactColor}`}>{card.impact}</span>
+                  <span className="rounded-full bg-blue-100 border border-blue-200 px-2 py-0.5 text-xs font-medium text-blue-700">Matched</span>
+                </div>
+                <p className="text-sm font-semibold text-gray-900">{card.title}</p>
+                <div className="rounded-lg bg-blue-100 px-3 py-2 text-xs text-blue-800">
+                  <span className="font-semibold">Why this matters: </span>{card.reason}
+                </div>
+              </div>
+            ))}
+
+            <p className="text-[11px] italic text-gray-400">
+              Impact scores are model estimates — not verified compliance flags. Sanctions hits appear as critical flags in each shipment's Flags tab.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Document types ── */}
-      <section id="documents" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="mb-16 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">Every document type, covered</h2>
-          <p className="mt-3 text-gray-500">Trained on the full range of international trade documentation.</p>
-        </div>
+      <section id="documents" className="bg-gray-50 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight">Every document type, covered</h2>
+            <p className="mt-3 text-gray-500">Trained on the full range of international trade documentation.</p>
+          </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          {DOCUMENT_TYPES.map((type) => (
-            <div
-              key={type}
-              className="flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-700"
-            >
-              <Tag className="h-3.5 w-3.5 text-gray-400" />
-              {type}
-            </div>
-          ))}
-        </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {DOCUMENT_TYPES.map((type) => (
+              <div
+                key={type}
+                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm text-gray-700"
+              >
+                <Tag className="h-3.5 w-3.5 text-gray-400" />
+                {type}
+              </div>
+            ))}
+          </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-3">
-          {[
-            { icon: FileText, label: 'PDF', desc: 'Scanned or digital' },
-            { icon: BarChart3, label: 'Images', desc: 'JPG, PNG — any quality' },
-            { icon: FileText, label: 'Office', desc: 'DOCX, XLSX' },
-          ].map(({ icon: Icon, label, desc }) => (
-            <div key={label} className="flex items-center gap-4 rounded-2xl border border-gray-200 p-5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
-                <Icon className="h-5 w-5 text-gray-600" />
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            {[
+              { icon: FileText, label: 'PDF', desc: 'Scanned or digital' },
+              { icon: BarChart3, label: 'Images', desc: 'JPG, PNG — any quality' },
+              { icon: FileText, label: 'Office', desc: 'DOCX, XLSX, CSV' },
+            ].map(({ icon: Icon, label, desc }) => (
+              <div key={label} className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                  <Icon className="h-5 w-5 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{label}</p>
+                  <p className="text-xs text-gray-500">{desc}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold">{label}</p>
-                <p className="text-xs text-gray-500">{desc}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -352,7 +429,7 @@ export function LandingPage() {
       <section className="bg-gray-900 py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <h2 className="text-3xl font-semibold text-white tracking-tight">
-            Ready to automate your document workflow?
+            Ready to automate your compliance workflow?
           </h2>
           <p className="mt-4 text-gray-400">
             Get started in minutes. No credit card required.
@@ -377,9 +454,9 @@ export function LandingPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-gray-100 bg-white py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <span className="text-sm font-semibold">BrokerAI</span>
+          <span className="text-sm font-semibold">Veritariff</span>
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} BrokerAI. Built for customs brokers and freight forwarders.
+            © {new Date().getFullYear()} Veritariff. Built for customs brokers and freight forwarders.
           </p>
           <div className="flex gap-5">
             <Link to="/login" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">Sign in</Link>
