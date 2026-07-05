@@ -18,4 +18,14 @@ export const queryKeys = {
   emailConnections: ['emailConnections'] as const,
   dashboard: ['dashboard'] as const,
   orgSettings: ['orgSettings'] as const,
+
+  flagSuggestions: (flagId: string) => ['flagSuggestions', flagId] as const,
+
+  intelFeed: (params?: object) => ['intelFeed', params] as const,
+  intelSearch: (q: string, params?: object) => ['intelSearch', q, params] as const,
+  intelArticle: (id: string) => ['intelArticle', id] as const,
+  shipmentIntel: (shipmentId: string) => ['shipmentIntel', shipmentId] as const,
+  intelInterests: ['intelInterests'] as const,
+  intelAlerts: (params?: object) => ['intelAlerts', params] as const,
+  intelSources: ['intelSources'] as const,
 };

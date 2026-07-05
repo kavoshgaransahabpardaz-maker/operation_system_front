@@ -1,6 +1,6 @@
 import type {
   DocumentStatus, DocumentType, ShipmentStatus, ReferenceType, UserRole,
-  FieldName, FieldStatus, FlagType, FlagSeverity,
+  FieldName, FieldStatus, FlagType, FlagSeverity, IntelEventType, InterestType,
 } from '@/types';
 
 export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
@@ -13,6 +13,9 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   customs_declaration: 'Customs Declaration',
   purchase_order: 'Purchase Order',
   delivery_order: 'Delivery Order',
+  mill_certificate: 'Mill Certificate',
+  suppliers_declaration: "Supplier's Declaration",
+  cmr: 'CMR Consignment Note',
   other: 'Other',
 };
 
@@ -136,3 +139,39 @@ export const FIELD_STATUS_COLORS: Record<FieldStatus, string> = {
 export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 export const ACCEPTED_FILE_TYPES = 'application/pdf,image/*';
+
+// ── Trade Intelligence ─────────────────────────────────────────────────────
+
+export const INTEL_EVENT_TYPE_LABELS: Record<IntelEventType, string> = {
+  tariff_change: 'Tariff Change',
+  sanctions: 'Sanctions',
+  regulation: 'Regulation',
+  trade_agreement: 'Trade Agreement',
+  market_notice: 'Market Notice',
+  other: 'Other',
+};
+
+export const INTEL_EVENT_TYPE_COLORS: Record<IntelEventType, string> = {
+  tariff_change: 'bg-orange-100 text-orange-700 border-orange-200',
+  sanctions: 'bg-red-100 text-red-700 border-red-200',
+  regulation: 'bg-blue-100 text-blue-700 border-blue-200',
+  trade_agreement: 'bg-green-100 text-green-700 border-green-200',
+  market_notice: 'bg-slate-100 text-slate-700 border-slate-200',
+  other: 'bg-gray-100 text-gray-700 border-gray-200',
+};
+
+/** Impact score 1–5 → Tailwind color classes */
+export const IMPACT_SCORE_COLORS: Record<number, string> = {
+  1: 'bg-slate-100 text-slate-600',
+  2: 'bg-blue-100 text-blue-700',
+  3: 'bg-amber-100 text-amber-700',
+  4: 'bg-orange-100 text-orange-700',
+  5: 'bg-red-100 text-red-700',
+};
+
+export const INTEREST_TYPE_LABELS: Record<InterestType, string> = {
+  hs_chapter: 'HS Chapter',
+  hs_heading: 'HS Heading',
+  country: 'Country',
+  party_name: 'Party Name',
+};

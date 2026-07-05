@@ -1,13 +1,30 @@
-import { LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LogOut, Bell } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { session } from '@/lib/session';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/documents': 'Documents',
+  '/shipments': 'Shipments',
+  '/email': 'Email Connections',
+  '/settings/users': 'Team Members',
+  '/settings/org': 'Organisation Settings',
+};
+
+function getTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  if (pathname.startsWith('/documents/')) return 'Document Detail';
+  if (pathname.startsWith('/shipments/')) return 'Shipment Detail';
+  return 'BrokerAI';
+}
+
 export function TopBar() {
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   function handleLogout() {
@@ -17,11 +34,34 @@ export function TopBar() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background px-6">
-      <div />
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{user?.email}</span>
-        <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-white px-6">
+      <h2 className="text-sm font-semibold text-foreground">
+        {getTitle(location.pathname)}
+      </h2>
+
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Notifications">
+          <Bell className="h-4 w-4" />
+        </Button>
+
+        <div className="mx-2 h-5 w-px bg-border" />
+
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
+            {user?.email?.charAt(0).toUpperCase() ?? '?'}
+          </div>
+          <span className="hidden max-w-[160px] truncate text-sm text-muted-foreground sm:block">
+            {user?.email}
+          </span>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-1 h-8 w-8 text-muted-foreground"
+          onClick={handleLogout}
+          title="Log out"
+        >
           <LogOut className="h-4 w-4" />
         </Button>
       </div>

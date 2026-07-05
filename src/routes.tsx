@@ -14,6 +14,11 @@ import { ShipmentDetailPage } from '@/features/shipments/ShipmentDetailPage';
 import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
 import { UserManagementPage } from '@/features/settings/UserManagementPage';
 import { OrgSettingsPage } from '@/features/settings/OrgSettingsPage';
+import { IntelFeedPage } from '@/features/intel/IntelFeedPage';
+import { IntelSearchPage } from '@/features/intel/IntelSearchPage';
+import { IntelArticlePage } from '@/features/intel/IntelArticlePage';
+import { IntelAlertsPage } from '@/features/intel/IntelAlertsPage';
+import { IntelSourcesPage } from '@/features/intel/IntelSourcesPage';
 
 export const router = createBrowserRouter([
   // Landing
@@ -40,6 +45,12 @@ export const router = createBrowserRouter([
           { path: '/email', element: <EmailConnectionsPage /> },
           { path: '/settings/users', element: <UserManagementPage /> },
           { path: '/settings/org', element: <OrgSettingsPage /> },
+          // Trade Intelligence
+          { path: '/intel', element: <IntelFeedPage /> },
+          { path: '/intel/search', element: <IntelSearchPage /> },
+          { path: '/intel/articles/:id', element: <IntelArticlePage /> },
+          { path: '/intel/alerts', element: <IntelAlertsPage /> },
+          { path: '/intel/sources', element: <IntelSourcesPage /> },
         ],
       },
     ],

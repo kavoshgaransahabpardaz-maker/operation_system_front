@@ -24,6 +24,9 @@ export type DocumentType =
   | 'customs_declaration'
   | 'purchase_order'
   | 'delivery_order'
+  | 'mill_certificate'
+  | 'suppliers_declaration'
+  | 'cmr'
   | 'other';
 
 export type EmailProvider = 'gmail' | 'microsoft365' | 'outlook' | 'imap';
@@ -136,6 +139,15 @@ export interface FlagResolution {
   created_at: string;
 }
 
+// ── Suggestions ────────────────────────────────────────────────────────────
+
+export interface Suggestion {
+  field_name: FieldName;
+  suggested_value: string;
+  cited_document_ids: string[];
+  rationale: string;
+}
+
 // ── Org settings ───────────────────────────────────────────────────────────
 
 export interface OrgSettings {
@@ -215,7 +227,6 @@ export interface ShipmentReference {
   ref_value: string;
 }
 
-// Workspace endpoint returns references without id
 export interface ShipmentReferenceOut {
   ref_type: ReferenceType;
   ref_value: string;
@@ -260,11 +271,20 @@ export interface RecentEmailImport {
   attachment_count: number;
 }
 
+export interface AttentionShipment {
+  id: string;
+  short_id: string;
+  flag_count: number;
+}
+
 export interface DashboardStats {
   total_shipments: number;
   documents_imported_today: number;
   unclassified_documents: number;
   shipments_requiring_review: number;
+  open_flags_critical?: number;
+  pending_field_reviews?: number;
+  attention_queue?: AttentionShipment[];
   recent_email_imports: RecentEmailImport[];
 }
 
@@ -275,4 +295,94 @@ export interface ActivityLog {
   document_id: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
+}
+
+// ── Trade Intelligence ─────────────────────────────────────────────────────
+
+export type IntelEventType =
+  | 'tariff_change'
+  | 'sanctions'
+  | 'regulation'
+  | 'trade_agreement'
+  | 'market_notice'
+  | 'other';
+
+export type InterestType = 'hs_chapter' | 'hs_heading' | 'country' | 'party_name';
+
+export type AlertDeliveryType = 'email' | 'in_app';
+
+export type AlertDeliveryStatus = 'sent' | 'failed';
+
+export interface IntelArticle {
+  id: string;
+  source_id: string;
+  url: string | null;
+  title: string;
+  content_raw: string;
+  published_at: string | null;
+  ingested_at: string;
+}
+
+export interface IntelEnrichment {
+  id: string;
+  article_id: string;
+  summary: string | null;
+  event_type: IntelEventType | null;
+  countries: string[] | null;
+  hs_chapters: string[] | null;
+  hs_headings: string[] | null;
+  regulation_refs: string[] | null;
+  impact_score: number | null;
+  impact_rationale: string | null;
+  model_version: string;
+  enriched_at: string;
+}
+
+export interface IntelMatch {
+  id: string;
+  article_id: string;
+  shipment_id: string | null;
+  org_id: string;
+  match_reason: string;
+  match_score: number | null;
+  created_at: string;
+}
+
+export interface IntelFeedItem {
+  article: IntelArticle;
+  enrichment: IntelEnrichment | null;
+  matches: IntelMatch[];
+  match_reason: string | null;
+}
+
+export interface IntelSource {
+  id: string;
+  name: string;
+  source_type: string | null;
+  url: string;
+  poll_cadence_minutes: number;
+  is_active: boolean;
+  last_polled_at: string | null;
+  last_error: string | null;
+  created_at: string;
+}
+
+export interface UserInterest {
+  id: string;
+  org_id: string;
+  interest_type: InterestType;
+  value: string;
+  is_explicit: boolean;
+  created_at: string;
+}
+
+export interface AlertDelivery {
+  id: string;
+  org_id: string;
+  article_id: string | null;
+  delivery_type: AlertDeliveryType;
+  subject: string | null;
+  body_summary: string | null;
+  delivered_at: string;
+  status: AlertDeliveryStatus;
 }

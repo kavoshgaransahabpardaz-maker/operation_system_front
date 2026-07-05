@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Flag, FlagDecision } from '@/types';
+import type { Flag, FlagDecision, Suggestion } from '@/types';
 
 export const flagsApi = {
   listByShipment: (shipmentId: string, status?: 'open' | 'resolved') =>
@@ -9,4 +9,7 @@ export const flagsApi = {
 
   resolve: (flagId: string, data: { decision: FlagDecision; chosen_value?: string; note?: string }) =>
     apiClient.post<Flag>(`/api/v1/flags/${flagId}/resolve`, data),
+
+  suggestions: (flagId: string) =>
+    apiClient.get<Suggestion[]>(`/api/v1/flags/${flagId}/suggestions`),
 };

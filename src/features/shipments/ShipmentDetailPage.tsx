@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload, Tag, Edit, Link as LinkIcon, ArrowLeftRight, Plus, RefreshCw, Mail,
-  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings,
+  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { workspaceApi, shipmentsApi, flagsApi } from '@/api';
+import { workspaceApi, shipmentsApi, flagsApi, intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
@@ -27,6 +27,7 @@ import { formatRelative, shortId } from '@/lib/utils';
 import { DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS, FIELD_NAME_LABELS } from '@/lib/constants';
 import { FlagListPanel } from '@/features/flags/FlagListPanel';
 import { ShipmentFieldsPanel } from '@/features/fields/ShipmentFieldsPanel';
+import { IntelArticleCard } from '@/features/intel/components/IntelArticleCard';
 import type { ShipmentStatus, ActivityAction } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -74,6 +75,7 @@ const ACTION_META: Record<ActivityAction, { icon: typeof Upload; label: (d: Reco
 
 export function ShipmentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ShipmentStatus | null>(null);
@@ -91,6 +93,11 @@ export function ShipmentDetailPage() {
   const { data: flags } = useQuery({
     queryKey: queryKeys.shipmentFlags(id!),
     queryFn: () => flagsApi.listByShipment(id!).then((r) => r.data),
+  });
+
+  const { data: intelItems } = useQuery({
+    queryKey: queryKeys.shipmentIntel(id!),
+    queryFn: () => intelApi.shipmentIntel(id!).then((r) => r.data),
   });
 
   const statusMutation = useMutation({
@@ -218,6 +225,47 @@ export function ShipmentDetailPage() {
 
       {/* Extracted fields panel */}
       <ShipmentFieldsPanel shipmentId={id!} />
+
+      {/* Shipment Intel panel */}
+      {intelItems && intelItems.length > 0 && (
+        <div className="rounded-xl border bg-background">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Newspaper className="h-4 w-4 text-blue-500" />
+              <h2 className="font-semibold">Trade Intelligence</h2>
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                {intelItems.length}
+              </span>
+            </div>
+            <button
+              onClick={() => navigate('/intel')}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              View all
+            </button>
+          </div>
+          <div className="p-4 space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Events matched to this shipment. Impact scores are model estimates — not verified compliance flags.
+            </p>
+            {intelItems.slice(0, 3).map((item) => (
+              <IntelArticleCard
+                key={item.article.id}
+                item={item}
+                onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+              />
+            ))}
+            {intelItems.length > 3 && (
+              <button
+                onClick={() => navigate('/intel')}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                +{intelItems.length - 3} more events
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Activity log */}
       <div className="rounded-xl border bg-background p-6">

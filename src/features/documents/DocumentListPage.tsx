@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Files, Upload } from 'lucide-react';
+import { Files, Upload, CloudUpload } from 'lucide-react';
 import { documentsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUpload } from '@/hooks/useUpload';
-import { formatBytes, formatRelative, shortId } from '@/lib/utils';
+import { formatBytes, formatRelative, shortId, cn } from '@/lib/utils';
 import { ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from '@/lib/constants';
 import type { DocumentStatus } from '@/types';
 
@@ -51,11 +51,13 @@ export function DocumentListPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Documents</h1>
+        <p className="text-sm text-muted-foreground">
+          {docs ? `${docs.length} document${docs.length !== 1 ? 's' : ''}` : ''}
+        </p>
         <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Upload className="mr-2 h-4 w-4" /> Upload Document
+            <Button className="gap-2">
+              <Upload className="h-4 w-4" /> Upload Document
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -63,19 +65,29 @@ export function DocumentListPage() {
               <DialogTitle>Upload Document</DialogTitle>
             </DialogHeader>
             <div
-              className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 transition-colors ${dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}`}
+              className={cn(
+                'flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-12 transition-colors cursor-pointer',
+                dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/20 hover:border-muted-foreground/40'
+              )}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+              onClick={() => fileRef.current?.click()}
             >
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Drag & drop here, or</p>
-              <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                {uploading ? 'Uploading…' : 'Choose file'}
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                PDF, images — max {MAX_FILE_BYTES / 1024 / 1024} MB
-              </p>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                <CloudUpload className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold">Drop file here or click to browse</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  PDF or image — max {MAX_FILE_BYTES / 1024 / 1024} MB
+                </p>
+              </div>
+              {uploading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Spinner size="sm" /> Uploading…
+                </div>
+              )}
               <input
                 ref={fileRef}
                 type="file"
@@ -88,83 +100,82 @@ export function DocumentListPage() {
         </Dialog>
       </div>
 
-      {/* Filter tabs */}
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as DocumentStatus | 'all')}>
-        <TabsList>
-          {STATUS_FILTERS.map((f) => (
-            <TabsTrigger key={f.value} value={f.value}>
-              {f.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="rounded-xl border bg-white shadow-sm">
+        <div className="border-b px-4 py-3">
+          <Tabs value={filter} onValueChange={(v) => setFilter(v as DocumentStatus | 'all')}>
+            <TabsList className="h-8">
+              {STATUS_FILTERS.map((f) => (
+                <TabsTrigger key={f.value} value={f.value} className="text-xs">
+                  {f.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
 
-      {isLoading ? (
-        <Spinner size="lg" className="mt-20" />
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={Files}
-          title="No documents yet"
-          description="Upload your first document."
-          action={
-            <Button onClick={() => setUploadOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" /> Upload Document
-            </Button>
-          }
-        />
-      ) : (
-        <div className="rounded-xl border bg-background">
+        {isLoading ? (
+          <Spinner size="lg" className="py-20" />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={Files}
+            title="No documents yet"
+            description="Upload your first document to get started."
+            action={
+              <Button onClick={() => setUploadOpen(true)} className="gap-2">
+                <Upload className="h-4 w-4" /> Upload Document
+              </Button>
+            }
+          />
+        ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>File</TableHead>
-                <TableHead>Type</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-5">File</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Size</TableHead>
                 <TableHead>Uploaded</TableHead>
-                <TableHead>Shipment</TableHead>
+                <TableHead className="pr-5">Shipment</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((doc) => (
                 <TableRow
                   key={doc.id}
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:bg-slate-50"
                   onClick={() => navigate(`/documents/${doc.id}`)}
                 >
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <FileIcon contentType={doc.content_type} className="text-muted-foreground" />
-                      <span className="max-w-[200px] truncate font-medium">{doc.filename}</span>
+                  <TableCell className="pl-5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                        <FileIcon contentType={doc.content_type} className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <span className="max-w-[240px] truncate text-sm font-medium">{doc.filename}</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {/* doc list doesn't have doc_type — placeholder */}—
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={doc.status} />
                   </TableCell>
                   <TableCell>
-                    <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-xs capitalize">
+                    <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-600">
                       {doc.source}
                     </span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  <TableCell className="text-sm text-muted-foreground">
                     {formatBytes(doc.size_bytes)}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatRelative(doc.created_at)}
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {doc.shipment_id ? shortId(doc.shipment_id) : '—'}
+                  <TableCell className="pr-5 font-mono text-xs text-muted-foreground">
+                    {doc.shipment_id ? shortId(doc.shipment_id) : <span className="text-slate-300">—</span>}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
