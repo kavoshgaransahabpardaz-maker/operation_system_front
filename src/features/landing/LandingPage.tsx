@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
-  FileText, Zap, Mail, Shield, Users, BarChart3, ChevronRight, Check,
+  FileText, Mail, Shield, Users, BarChart3, ChevronRight, Check,
   Ship, Tag, ArrowRight, AlertTriangle, GitCompare, Newspaper,
   Search, Bell, Lightbulb,
 } from 'lucide-react';
