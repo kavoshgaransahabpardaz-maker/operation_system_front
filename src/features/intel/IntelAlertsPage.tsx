@@ -8,8 +8,8 @@ import { formatRelative } from '@/lib/utils';
 
 export function IntelAlertsPage() {
   const { data: alerts, isLoading } = useQuery({
-    queryKey: queryKeys.intelAlerts(),
-    queryFn: () => intelApi.listAlerts({ limit: 100 }).then((r) => r.data),
+    queryKey: queryKeys.intelAlerts,
+    queryFn: () => intelApi.listAlerts(100).then((r) => r.data),
   });
 
   if (isLoading) return <Spinner size="lg" className="mt-20" />;
