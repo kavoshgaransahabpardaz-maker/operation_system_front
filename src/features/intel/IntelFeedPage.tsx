@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { Pagination } from '@/components/shared/Pagination';
 import { IntelArticleCard } from './components/IntelArticleCard';
 import { IntelInterestsPanel } from './components/IntelInterestsPanel';
 import { INTEL_EVENT_TYPE_LABELS } from '@/lib/constants';
@@ -23,33 +24,42 @@ const IMPACT_OPTIONS = [
   { label: 'Critical (5)', value: 5 },
 ];
 
+const PAGE_SIZE = 20;
+
 export function IntelFeedPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+
   const eventType = searchParams.get('event_type') as IntelEventType | null;
   const minImpact = searchParams.get('min_impact') ? Number(searchParams.get('min_impact')) : undefined;
 
   const params = {
     event_type: eventType ?? undefined,
     min_impact: minImpact,
-    limit: 50,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
   };
 
   const { data: feed, isLoading } = useQuery({
     queryKey: queryKeys.intelFeed(params),
     queryFn: () => intelApi.feed(params).then((r) => r.data),
     refetchInterval: 300_000,
+    placeholderData: (prev) => prev,
   });
 
   function setFilter(key: string, val: string | null) {
     const next = new URLSearchParams(searchParams);
     if (val) next.set(key, val); else next.delete(key);
     setSearchParams(next, { replace: true });
+    setPage(1); // reset page on filter change
   }
 
   const matched = feed?.filter((item) => item.matches.length > 0) ?? [];
   const unmatched = feed?.filter((item) => item.matches.length === 0) ?? [];
+  const total = feed?.length ?? 0;
+  const hasMore = total === PAGE_SIZE;
 
   return (
     <div className="flex gap-6">
@@ -76,7 +86,6 @@ export function IntelFeedPage() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-x-4 gap-y-2">
-          {/* Event type */}
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setFilter('event_type', null)}
@@ -99,7 +108,6 @@ export function IntelFeedPage() {
             ))}
           </div>
 
-          {/* Min impact */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-400">Impact:</span>
             {IMPACT_OPTIONS.map((opt) => (
@@ -130,32 +138,11 @@ export function IntelFeedPage() {
             }
           />
         ) : (
-          <div className="space-y-4">
-            {/* Matched articles */}
-            {matched.length > 0 && (
-              <div className="space-y-3">
-                {matched.map((item) => (
-                  <IntelArticleCard
-                    key={item.article.id}
-                    item={item}
-                    onClick={() => navigate(`/intel/articles/${item.article.id}`)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Separator for unmatched */}
-            {unmatched.length > 0 && (
-              <>
-                {matched.length > 0 && (
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="flex-1 h-px bg-slate-200" />
-                    <span className="text-xs text-slate-400 font-medium">Other trade news</span>
-                    <div className="flex-1 h-px bg-slate-200" />
-                  </div>
-                )}
+          <>
+            <div className="space-y-4">
+              {matched.length > 0 && (
                 <div className="space-y-3">
-                  {unmatched.map((item) => (
+                  {matched.map((item) => (
                     <IntelArticleCard
                       key={item.article.id}
                       item={item}
@@ -163,9 +150,38 @@ export function IntelFeedPage() {
                     />
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+              )}
+
+              {unmatched.length > 0 && (
+                <>
+                  {matched.length > 0 && (
+                    <div className="flex items-center gap-3 py-2">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="text-xs text-slate-400 font-medium">Other trade news</span>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {unmatched.map((item) => (
+                      <IntelArticleCard
+                        key={item.article.id}
+                        item={item}
+                        onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <Pagination
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={total}
+              hasMore={hasMore}
+              onPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            />
+          </>
         )}
       </div>
 

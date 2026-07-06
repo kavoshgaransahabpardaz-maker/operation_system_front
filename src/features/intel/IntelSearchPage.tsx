@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { Pagination } from '@/components/shared/Pagination';
 import { IntelArticleCard } from './components/IntelArticleCard';
+
+const PAGE_SIZE = 20;
 
 export function IntelSearchPage() {
   const navigate = useNavigate();
@@ -16,17 +19,26 @@ export function IntelSearchPage() {
   const initialQ = searchParams.get('q') ?? '';
   const [q, setQ] = useState(initialQ);
   const [submittedQ, setSubmittedQ] = useState(initialQ);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    setQ(searchParams.get('q') ?? '');
-    setSubmittedQ(searchParams.get('q') ?? '');
+    const qParam = searchParams.get('q') ?? '';
+    setQ(qParam);
+    setSubmittedQ(qParam);
+    setPage(1);
   }, [searchParams]);
 
   const { data: results, isLoading } = useQuery({
-    queryKey: queryKeys.intelSearch(submittedQ),
-    queryFn: () => intelApi.search(submittedQ).then((r) => r.data),
+    queryKey: queryKeys.intelSearch(submittedQ, { page }),
+    queryFn: () => intelApi.search(submittedQ, PAGE_SIZE).then((r) => r.data),
     enabled: !!submittedQ.trim(),
+    placeholderData: (prev) => prev,
   });
+
+  // Client-side slice for search (API returns flat list)
+  const paged = results?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? [];
+  const total = paged.length;
+  const hasMore = results ? results.length > page * PAGE_SIZE : false;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +47,7 @@ export function IntelSearchPage() {
       next.set('q', q.trim());
       setSearchParams(next, { replace: true });
       setSubmittedQ(q.trim());
+      setPage(1);
     }
   }
 
@@ -80,15 +93,27 @@ export function IntelSearchPage() {
           }
         />
       ) : (
-        <div className="space-y-3">
-          {results.map((item) => (
-            <IntelArticleCard
-              key={item.article.id}
-              item={item}
-              onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+        <>
+          <div className="space-y-3">
+            {paged.map((item) => (
+              <IntelArticleCard
+                key={item.article.id}
+                item={item}
+                onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+              />
+            ))}
+          </div>
+
+          {results.length > PAGE_SIZE && (
+            <Pagination
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={total}
+              hasMore={hasMore}
+              onPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             />
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
