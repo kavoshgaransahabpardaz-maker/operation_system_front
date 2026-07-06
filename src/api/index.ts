@@ -9,4 +9,4 @@ export { fieldsApi } from './fields';
 export { flagsApi } from './flags';
 export { orgSettingsApi } from './orgSettings';
 export { intelApi } from './intel';
-export type { IntelFeedParams, IntelArticleDetail } from './intel';
+export type { IntelFeedParams } from './intel';

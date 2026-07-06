@@ -19,6 +19,11 @@ import { IntelSearchPage } from '@/features/intel/IntelSearchPage';
 import { IntelArticlePage } from '@/features/intel/IntelArticlePage';
 import { IntelAlertsPage } from '@/features/intel/IntelAlertsPage';
 import { IntelSourcesPage } from '@/features/intel/IntelSourcesPage';
+import { IntelInterestsPage } from '@/features/intel/IntelInterestsPage';
+import { IntelAnalyticsPage } from '@/features/intel/IntelAnalyticsPage';
+import { IntelKnowledgeGraphPage } from '@/features/intel/IntelKnowledgeGraphPage';
+import { IntelNotificationsPage } from '@/features/intel/IntelNotificationsPage';
+import { IntelJobsPage } from '@/features/intel/IntelJobsPage';
 
 export const router = createBrowserRouter([
   // Landing
@@ -50,7 +55,12 @@ export const router = createBrowserRouter([
           { path: '/intel/search', element: <IntelSearchPage /> },
           { path: '/intel/articles/:id', element: <IntelArticlePage /> },
           { path: '/intel/alerts', element: <IntelAlertsPage /> },
+          { path: '/intel/interests', element: <IntelInterestsPage /> },
+          { path: '/intel/analytics', element: <IntelAnalyticsPage /> },
+          { path: '/intel/knowledge-graph', element: <IntelKnowledgeGraphPage /> },
+          { path: '/intel/notifications', element: <IntelNotificationsPage /> },
           { path: '/intel/sources', element: <IntelSourcesPage /> },
+          { path: '/intel/jobs', element: <IntelJobsPage /> },
         ],
       },
     ],

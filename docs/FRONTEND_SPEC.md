@@ -34,9 +34,10 @@ src/
     emails.ts
     shipments.ts
     workspace.ts
-    fields.ts        # NEW — extracted field review
-    flags.ts         # NEW — mismatch flags
-    orgSettings.ts   # NEW — tolerance settings
+    fields.ts        # extracted field review
+    flags.ts         # mismatch flags
+    orgSettings.ts   # tolerance settings
+    intel.ts         # NEW — trade intelligence feed, search, interests, alerts
   components/
     layout/          # AppShell, Sidebar, TopBar
     ui/              # shadcn/ui re-exports
@@ -46,8 +47,9 @@ src/
     dashboard/       # DashboardPage + widgets
     documents/       # DocumentListPage, DocumentDetailPage, UploadZone
     shipments/       # ShipmentListPage, ShipmentDetailPage
-    fields/          # NEW — FieldReviewPanel, FieldRow, CorrectFieldDialog
-    flags/           # NEW — FlagListPanel, FlagCard, ResolveFlagDialog
+    fields/          # FieldReviewPanel, FieldRow, CorrectFieldDialog
+    flags/           # FlagListPanel, FlagCard, ResolveFlagDialog, SuggestionsPanel (NEW)
+    intel/           # NEW — IntelFeedPage, IntelSearchPage, IntelArticlePage, IntelInterestsPanel, AlertsPanel
     email/           # EmailConnectionsPage
     settings/        # UserManagementPage, OrgSettingsPage (NEW)
   hooks/             # useCurrentUser, useUpload, usePoll
@@ -92,6 +94,9 @@ export type DocumentType =
   | 'customs_declaration'
   | 'purchase_order'
   | 'delivery_order'
+  | 'mill_certificate'        // NEW
+  | 'suppliers_declaration'   // NEW
+  | 'cmr'                     // NEW — CMR consignment note
   | 'other';
 
 export type EmailProvider = 'gmail' | 'microsoft365' | 'outlook' | 'imap';
@@ -338,6 +343,210 @@ export interface ActivityLog {
   details: Record<string, unknown> | null;
   created_at: string;
 }
+
+// ── NEW: Suggestions ───────────────────────────────────────────────────────
+
+export interface Suggestion {
+  field_name: FieldName;
+  suggested_value: string;
+  cited_document_ids: string[];
+  rationale: string;
+}
+
+// ── NEW: Attention queue (enhanced dashboard) ──────────────────────────────
+
+export interface AttentionShipment {
+  id: string;
+  short_id: string;   // first 8 chars of UUID
+  flag_count: number;
+}
+
+// ── NEW: Trade Intelligence ────────────────────────────────────────────────
+
+export type IntelEventType =
+  | 'tariff_change'
+  | 'sanctions'
+  | 'regulation'
+  | 'trade_agreement'
+  | 'market_notice'
+  | 'other';
+
+export type InterestType = 'hs_chapter' | 'hs_heading' | 'country' | 'party_name';
+
+export type AlertDeliveryType = 'email' | 'in_app';
+
+export type AlertDeliveryStatus = 'sent' | 'failed';
+
+export interface IntelEnrichment {
+  id: string;
+  article_id: string;
+  summary: string | null;          // ≤80 words
+  event_type: IntelEventType | null;
+  countries: string[] | null;      // ISO country codes
+  hs_chapters: string[] | null;
+  hs_headings: string[] | null;
+  regulation_refs: string[] | null;
+  impact_score: number | null;     // 1–5
+  impact_rationale: string | null;
+  model_version: string;
+  enriched_at: string;
+  // Extended fields
+  industries: string[] | null;
+  companies: string[] | null;
+  commodities: string[] | null;
+  topics: string[] | null;
+  trade_agreements: string[] | null;
+  ports: string[] | null;
+  currencies: string[] | null;
+  severity: string | null;         // low / medium / high / critical
+  urgency: string | null;          // immediate / short_term / long_term
+  supply_chain_impact: string | null;
+  price_effect: string | null;     // increase / decrease / neutral / unknown
+  affected_industries: string[] | null;
+  affected_countries: string[] | null;
+}
+
+export interface IntelMatch {
+  id: string;
+  article_id: string;
+  shipment_id: string | null;
+  org_id: string;
+  match_reason: string;            // "HS 7208 ∩ your product records"
+  match_score: number | null;
+  created_at: string;
+}
+
+export interface IntelFeedItem {
+  article: IntelArticle;
+  enrichment: IntelEnrichment | null;
+  matches: IntelMatch[];
+  match_reason: string | null;     // top match reason for this org
+}
+
+export interface IntelArticle {
+  id: string;
+  source_id: string;
+  url: string | null;
+  title: string;
+  content_raw: string;
+  published_at: string | null;
+  ingested_at: string;
+  language: string | null;         // ISO language code e.g. "en"
+  author: string | null;
+  image_url: string | null;
+  word_count: number | null;
+  is_duplicate: boolean;
+  processing_status: 'raw' | 'parsed' | 'enriched' | 'failed';
+}
+
+export interface IntelSource {
+  id: string;
+  name: string;
+  source_type: string | null;      // rss / scraper / api / sanctions_list
+  category: string | null;         // tariff / sanctions / regulation / trade_news
+  url: string;
+  poll_cadence_minutes: number;
+  is_active: boolean;
+  last_polled_at: string | null;
+  last_error: string | null;
+  health_status: string;           // unknown / healthy / degraded / dead
+  articles_collected: number;
+  priority: number;                // lower = polled first
+  config: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface IntelJob {
+  id: string;
+  source_id: string | null;
+  job_type: string;
+  status: 'pending' | 'running' | 'done' | 'failed';
+  articles_processed: number;
+  error_message: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface TrendingTopic {
+  id: string;
+  topic: string;
+  topic_type: string;              // hs_chapter / country / event_type / commodity
+  article_count: number;
+  period_start: string;            // YYYY-MM-DD
+  period_end: string;
+  created_at: string;
+}
+
+export interface KnowledgeRelation {
+  id: string;
+  subject_type: string;            // country / hs_code / company / regulation
+  subject_value: string;
+  predicate: string;               // affects / references / applies_to / etc.
+  object_type: string;
+  object_value: string;
+  article_id: string | null;
+  confidence: number;              // 0.0–1.0
+  created_at: string;
+}
+
+export interface NotificationPreference {
+  id: string;
+  org_id: string;
+  user_id: string;
+  min_impact_score: number;        // 1–5; articles below this are not alerted
+  event_types: IntelEventType[];   // empty = all event types
+  delivery_channels: ('email' | 'in_app')[];
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface HeatmapEntry {
+  country: string;                 // ISO country code
+  article_count: number;
+}
+
+export interface EventTypeCount {
+  event_type: IntelEventType;
+  article_count: number;
+}
+
+export interface ImpactTimelineEntry {
+  date: string;                    // YYYY-MM-DD
+  avg_impact_score: number;
+  article_count: number;
+}
+
+export interface SearchResult {
+  article_id: string;
+  title: string;
+  url: string | null;
+  published_at: string | null;
+  ingested_at: string | null;
+  processing_status: string;
+  rank: number;                    // FTS rank score
+  match_source: string;            // 'fts' | 'tag'
+}
+
+export interface UserInterest {
+  id: string;
+  org_id: string;
+  interest_type: InterestType;
+  value: string;
+  is_explicit: boolean;            // false = auto-seeded from history
+  created_at: string;
+}
+
+export interface AlertDelivery {
+  id: string;
+  org_id: string;
+  article_id: string | null;
+  delivery_type: AlertDeliveryType;
+  subject: string | null;
+  body_summary: string | null;
+  delivered_at: string;
+  status: AlertDeliveryStatus;
+}
 ```
 
 ---
@@ -519,7 +728,7 @@ export const flagsApi = {
 };
 ```
 
-### `src/api/orgSettings.ts` — NEW
+### `src/api/orgSettings.ts`
 ```typescript
 export const orgSettingsApi = {
   get: () => apiClient.get<OrgSettings>('/api/v1/org/settings'),
@@ -527,6 +736,117 @@ export const orgSettingsApi = {
   update: (data: Partial<Pick<OrgSettings,
     'weight_qty_tolerance_pct' | 'value_tolerance_pct' | 'name_match_threshold'
   >>) => apiClient.patch<OrgSettings>('/api/v1/org/settings', data),
+};
+```
+
+### `src/api/intel.ts` — NEW
+```typescript
+export const intelApi = {
+  // Personalised feed — articles matched to the org's interests/shipments first
+  feed: (params?: { limit?: number; offset?: number; event_type?: IntelEventType; min_impact?: number }) =>
+    apiClient.get<IntelFeedItem[]>('/api/v1/intel/feed', { params }),
+
+  // Full-text keyword search over articles
+  search: (q: string, limit = 20) =>
+    apiClient.get<IntelFeedItem[]>('/api/v1/intel/search', { params: { q, limit } }),
+
+  // Single article detail
+  article: (articleId: string) =>
+    apiClient.get<IntelFeedItem>(`/api/v1/intel/articles/${articleId}`),
+
+  // Articles matched to a specific shipment
+  shipmentIntel: (shipmentId: string) =>
+    apiClient.get<IntelFeedItem[]>(`/api/v1/shipments/${shipmentId}/intel`),
+
+  // Interest profile
+  listInterests: () => apiClient.get<UserInterest[]>('/api/v1/intel/interests'),
+
+  addInterest: (data: { interest_type: InterestType; value: string }) =>
+    apiClient.post<UserInterest>('/api/v1/intel/interests', data),
+
+  deleteInterest: (interestId: string) =>
+    apiClient.delete(`/api/v1/intel/interests/${interestId}`),
+
+  // Alerts
+  listAlerts: (limit = 50) =>
+    apiClient.get<AlertDelivery[]>('/api/v1/intel/alerts', { params: { limit } }),
+
+  // Tags autocomplete for search UI
+  tagsAutocomplete: (prefix: string) =>
+    apiClient.get<string[]>('/api/v1/intel/tags/autocomplete', { params: { prefix } }),
+
+  // Notification preferences
+  getNotificationPreferences: () =>
+    apiClient.get<NotificationPreference>('/api/v1/intel/notifications/preferences'),
+
+  updateNotificationPreferences: (data: Partial<Pick<NotificationPreference, 'min_impact_score' | 'event_types' | 'delivery_channels' | 'is_active'>>) =>
+    apiClient.patch<NotificationPreference>('/api/v1/intel/notifications/preferences', data),
+
+  // Analytics
+  trendingTopics: (params?: { limit?: number; topic_type?: string }) =>
+    apiClient.get<TrendingTopic[]>('/api/v1/intel/analytics/trending', { params }),
+
+  countryHeatmap: (days = 30) =>
+    apiClient.get<HeatmapEntry[]>('/api/v1/intel/analytics/heatmap', { params: { days } }),
+
+  byEventType: (days = 30) =>
+    apiClient.get<EventTypeCount[]>('/api/v1/intel/analytics/by-event-type', { params: { days } }),
+
+  impactTimeline: (days = 30) =>
+    apiClient.get<ImpactTimelineEntry[]>('/api/v1/intel/analytics/impact-timeline', { params: { days } }),
+
+  // Knowledge graph
+  knowledgeGraph: (subjectType: string, subjectValue: string) =>
+    apiClient.get<KnowledgeRelation[]>('/api/v1/intel/knowledge-graph', {
+      params: { subject_type: subjectType, subject_value: subjectValue },
+    }),
+
+  // Admin — source management
+  listSources: () => apiClient.get<IntelSource[]>('/api/v1/intel/sources'),
+
+  createSource: (data: {
+    name: string; source_type?: string; category?: string;
+    url: string; poll_cadence_minutes?: number; is_active?: boolean;
+    priority?: number; config?: Record<string, unknown>;
+  }) => apiClient.post<IntelSource>('/api/v1/intel/sources', data),
+
+  updateSource: (sourceId: string, data: Partial<IntelSource>) =>
+    apiClient.patch<IntelSource>(`/api/v1/intel/sources/${sourceId}`, data),
+
+  deactivateSource: (sourceId: string) =>
+    apiClient.delete(`/api/v1/intel/sources/${sourceId}`),
+
+  pollSource: (sourceId: string) =>
+    apiClient.post<{ status: string; source_id: string; source_name: string }>(
+      `/api/v1/intel/sources/${sourceId}/poll`
+    ),
+
+  // Admin — jobs
+  listJobs: (params?: { limit?: number; status?: string; job_type?: string }) =>
+    apiClient.get<IntelJob[]>('/api/v1/intel/jobs', { params }),
+
+  // Admin — reprocess
+  reprocessArticle: (articleId: string) =>
+    apiClient.post<{ status: string; article_id: string; title: string }>(
+      `/api/v1/intel/admin/reprocess/${articleId}`
+    ),
+};
+```
+
+### `src/api/flags.ts` — updated
+```typescript
+export const flagsApi = {
+  listByShipment: (shipmentId: string, status?: 'open' | 'resolved') =>
+    apiClient.get<Flag[]>(`/api/v1/shipments/${shipmentId}/flags`, {
+      params: status ? { status } : {},
+    }),
+
+  resolve: (flagId: string, data: { decision: FlagDecision; chosen_value?: string; note?: string }) =>
+    apiClient.post<Flag>(`/api/v1/flags/${flagId}/resolve`, data),
+
+  // NEW — deterministic suggestions for resolving a flag
+  suggestions: (flagId: string) =>
+    apiClient.get<Suggestion[]>(`/api/v1/flags/${flagId}/suggestions`),
 };
 ```
 
@@ -649,6 +969,49 @@ export const FIELD_STATUS_COLORS: Record<FieldStatus, string> = {
 };
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+
+// NEW doc types added in Track A
+export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
+  // (merge with existing — add these 3)
+  mill_certificate: 'Mill Certificate',
+  suppliers_declaration: "Supplier's Declaration",
+  cmr: 'CMR Consignment Note',
+  // ...all previous entries unchanged
+};
+
+// NEW
+export const INTEL_EVENT_TYPE_LABELS: Record<IntelEventType, string> = {
+  tariff_change: 'Tariff Change',
+  sanctions: 'Sanctions',
+  regulation: 'Regulation Update',
+  trade_agreement: 'Trade Agreement',
+  market_notice: 'Market Notice',
+  other: 'Other',
+};
+
+export const INTEL_EVENT_TYPE_COLORS: Record<IntelEventType, string> = {
+  tariff_change: 'bg-orange-100 text-orange-700',
+  sanctions: 'bg-red-100 text-red-700',
+  regulation: 'bg-blue-100 text-blue-700',
+  trade_agreement: 'bg-green-100 text-green-700',
+  market_notice: 'bg-gray-100 text-gray-700',
+  other: 'bg-gray-100 text-gray-600',
+};
+
+export const IMPACT_SCORE_COLORS: Record<number, string> = {
+  1: 'text-gray-500',
+  2: 'text-blue-500',
+  3: 'text-yellow-500',
+  4: 'text-orange-500',
+  5: 'text-red-600',
+};
+
+export const INTEREST_TYPE_LABELS: Record<InterestType, string> = {
+  hs_chapter: 'HS Chapter',
+  hs_heading: 'HS Heading',
+  country: 'Country',
+  party_name: 'Party Name',
+};
 ```
 
 ---
@@ -670,7 +1033,17 @@ Use `createBrowserRouter` with the following route tree.
 | `/shipments/:id` | `ShipmentDetailPage` | Yes | |
 | `/email` | `EmailConnectionsPage` | Yes | |
 | `/settings/users` | `UserManagementPage` | Yes | Admin only |
-| `/settings/org` | `OrgSettingsPage` | Yes | Admin only — NEW |
+| `/settings/org` | `OrgSettingsPage` | Yes | Admin only |
+| `/intel` | `IntelFeedPage` | Yes | NEW — trade intelligence feed |
+| `/intel/search` | `IntelSearchPage` | Yes | NEW |
+| `/intel/articles/:id` | `IntelArticlePage` | Yes | NEW |
+| `/intel/alerts` | `IntelAlertsPage` | Yes | NEW |
+| `/intel/interests` | `IntelInterestsPage` | Yes | NEW — manage interest profile |
+| `/intel/analytics` | `IntelAnalyticsPage` | Yes | NEW — trending, heatmap, impact timeline |
+| `/intel/knowledge-graph` | `IntelKnowledgeGraphPage` | Yes | NEW — explore entity relationships |
+| `/intel/notifications` | `IntelNotificationsPage` | Yes | NEW — notification preferences |
+| `/intel/sources` | `IntelSourcesPage` | Yes | Admin only — NEW |
+| `/intel/jobs` | `IntelJobsPage` | Yes | Admin only — NEW — pipeline job history |
 
 Wrap all authenticated routes in an `AuthGuard` component that reads `localStorage.access_token` and redirects to `/login` if missing.
 
@@ -694,7 +1067,8 @@ All authenticated pages render inside `AppShell`:
 | Ship | Shipments | `/shipments` | All roles |
 | Mail | Email | `/email` | All roles |
 | Users | Users | `/settings/users` | Admin only |
-| Settings | Org Settings | `/settings/org` | Admin only — NEW |
+| Settings | Org Settings | `/settings/org` | Admin only |
+| Newspaper | Trade Intel | `/intel` | All roles — NEW |
 
 Active route highlights with a filled background. Sidebar shows the org name at the top and a small user-role badge at the bottom.
 
@@ -746,14 +1120,35 @@ Layout: 4 stat cards in a 2×2 grid (desktop), then two panels below.
 
 #### Stat Cards
 
-| Stat | Field | Icon |
-|---|---|---|
-| Total Shipments | `total_shipments` | Ship |
-| Imported Today | `documents_imported_today` | FileInput |
-| Needs Classification | `unclassified_documents` | Tag |
-| Needs Review | `shipments_requiring_review` | AlertCircle |
+Layout: 2×3 grid on desktop (6 cards total).
 
-Show a number and a small label. `needs_review` card gets a yellow/amber background when count > 0.
+| Stat | Field | Icon | Alert color |
+|---|---|---|---|
+| Total Shipments | `total_shipments` | Ship | — |
+| Imported Today | `documents_imported_today` | FileInput | — |
+| Needs Classification | `unclassified_documents` | Tag | amber if > 0 |
+| Needs Review | `shipments_requiring_review` | AlertCircle | amber if > 0 |
+| Critical Issues | `open_flags_critical` | AlertOctagon | red if > 0 — NEW |
+| Fields to Review | `pending_field_reviews` | ScanSearch | amber if > 0 — NEW |
+
+Show a number and a small label.
+
+#### Attention Queue — NEW
+
+Source: `attention_queue` from `DashboardStats` (up to 5 shipments with most open critical flags).
+
+Rendered as a compact list below the stat cards:
+
+```
+⚠ Shipments needing attention
+┌──────────────────────────────────────┐
+│ ABCD1234   3 critical issues   [View] │
+│ EF567890   1 critical issue    [View] │
+└──────────────────────────────────────┘
+```
+
+Each row: short shipment ID + flag count + "View" link → `/shipments/:id`.
+Hidden entirely when `attention_queue` is empty.
 
 #### Recent Email Imports Panel
 
@@ -970,11 +1365,16 @@ Each flag renders as a `FlagCard`:
 **Resolve Flag Dialog**:
 - Flag title + description shown (read-only)
 - Conflicting values list (read-only)
+- **Suggestions section** (NEW): call `GET /api/v1/flags/:id/suggestions` on dialog open. If suggestions exist, show each as a clickable chip:
+  ```
+  💡 Suggested: 7208.51.00  (from Commercial Invoice — Primary source for HS code)
+  ```
+  Clicking a suggestion pre-fills the `chosen_value` input and sets decision to "Override with value".
 - `decision` select: "Accept as-is", "Override with value", "Dismiss"
 - `chosen_value` text input (shown only when decision = "Override with value")
 - `note` textarea (optional, for all decisions)
 - Submit → `POST /api/v1/flags/:id/resolve`
-- On success: invalidate flags query, toast "Flag resolved", close dialog
+- On success: invalidate flags query + shipment status, toast "Flag resolved", close dialog
 
 **Empty state** (no flags): Green checkmark + "No issues detected. All extracted fields are consistent."
 
@@ -1171,11 +1571,29 @@ Colored pill: type label (bold) + value. Colors per type:
 - `container`: teal
 - `internal`: gray
 
-### `FlagCard` — NEW
+### `FlagCard`
 ```
 Props: { flag: Flag, onResolve: (flag: Flag) => void }
 ```
 Card with severity-colored left border. Shows title, description, conflicting values list (each value linking to the source document), severity badge, created time. "Resolve" button (hidden if already resolved).
+
+### `ImpactBadge` — NEW
+```
+Props: { score: number }   // 1–5
+```
+Colored dot + number. Colors from `IMPACT_SCORE_COLORS`. Tooltip: score meaning ("1 = Informational", "5 = Immediate action required").
+
+### `IntelEventBadge` — NEW
+```
+Props: { event_type: IntelEventType }
+```
+Pill using `INTEL_EVENT_TYPE_COLORS`.
+
+### `InterestChip` — NEW
+```
+Props: { interest: UserInterest, onDelete?: () => void }
+```
+Pill showing `INTEREST_TYPE_LABELS[type]`: value. Delete × button if `onDelete` provided.
 
 ### `FieldStatusBadge` — NEW
 ```
@@ -1214,7 +1632,16 @@ export const queryKeys = {
   activityLog: (id: string) => ['activityLog', id],
   emailConnections: ['emailConnections'],
   dashboard: ['dashboard'],
-  orgSettings: ['orgSettings'],                                    // NEW
+  orgSettings: ['orgSettings'],
+  // NEW — Trade Intelligence
+  intelFeed: (filters?: object) => ['intelFeed', filters],
+  intelSearch: (q: string) => ['intelSearch', q],
+  intelArticle: (id: string) => ['intelArticle', id],
+  shipmentIntel: (shipmentId: string) => ['shipmentIntel', shipmentId],
+  intelInterests: ['intelInterests'],
+  intelAlerts: ['intelAlerts'],
+  intelSources: ['intelSources'],
+  flagSuggestions: (flagId: string) => ['flagSuggestions', flagId],
 };
 ```
 
@@ -1224,6 +1651,9 @@ export const queryKeys = {
 - `document` detail: every 10 seconds when status is `ocr_pending` or `ocr_processing` (use `refetchInterval` conditionally)
 - `documentFields`: every 10 seconds when document status is `classified` but fields array is empty (extraction in progress)
 - `shipmentFlags`: no polling (manual invalidation after resolve)
+- `intelFeed`: every 5 minutes (`refetchInterval: 300_000`) — new articles arrive hourly from sources
+- `intelAlerts`: no polling (manual refresh)
+- `flagSuggestions`: no polling (fetched once per dialog open)
 - All others: default (no polling)
 
 ---
@@ -1296,7 +1726,10 @@ Implement in this order to deliver value incrementally:
 11. **Email Connections page**
 12. **User Management page** (admin only)
 13. **Org Settings page** (admin only)
-14. **Polish**: empty states, loading states, error handling, responsive layout
+14. **Trade Intel Feed page** — feed, search, article detail
+15. **Intel Alerts page** + shipment intel panel (on Shipment Detail)
+16. **Intel Sources admin page**
+17. **Polish**: empty states, loading states, error handling, responsive layout
 
 ---
 
@@ -1315,3 +1748,292 @@ Implement in this order to deliver value incrementally:
 - **Field corrections**: after correcting a field, the old `value_raw` is preserved and shown as "original". Never hide the original extraction.
 - **Zero-tolerance fields**: HS Code, Country of Origin, Currency, Incoterm. Any mismatch on these produces a `critical` flag regardless of org settings. Make this visible in the UI with a tooltip or note on those field rows.
 - `name_match_threshold` is stored as 0.0–1.0. Always display as a percentage (multiply by 100) in the UI.
+- **Suggestions are never auto-applied**: only show them as pre-fill options in the resolve dialog. The user must explicitly click and submit.
+- **Intel HS codes**: only displayed when `hs_chapters` / `hs_headings` arrays are non-empty. Never infer HS codes from article text in the UI.
+- **Sanctions flags** (`flag_type=mismatch`, `severity=critical`, title contains "Sanctions"): highlight with a distinct red banner on Shipment Detail. Never dismiss silently.
+- **Interest profile**: `is_explicit=false` interests are shown with a dimmed style and a tooltip "Auto-detected from your shipment history". They cannot be deleted — only explicit interests can be removed.
+- **Tabular files** (XLS/XLSX/CSV/XML): upload is supported (same upload UI). Show a spreadsheet icon (`Sheet`) instead of `FileText` for these content types.
+
+---
+
+## 17. Trade Intelligence Pages — NEW
+
+### 17.1 Intel Feed Page (`/intel`)
+
+Calls `GET /api/v1/intel/feed` with `refetchInterval: 300_000`.
+
+**Header**: "Trade Intelligence" title + search input (navigates to `/intel/search?q=...`) + "My Interests" button (opens interests panel)
+
+**Filter bar**:
+- Event type filter: All | Tariff Change | Sanctions | Regulation | Trade Agreement | Market Notice
+- Min impact filter: All | High (≥4) | Critical (5)
+
+**Feed layout**: card list, newest matched articles first.
+
+Each **IntelArticleCard**:
+```
+┌──────────────────────────────────────────────────────────────┐
+│ [event badge] SANCTIONS   [impact badge] ●●●●● 5            │
+│                                                               │
+│ Acme Steel Ltd designated under UK sanctions                  │
+│ Published: 2 hours ago · Source: UK Sanctions (OFSI)         │
+│                                                               │
+│ Summary: Acme Steel Ltd has been added to the UK             │
+│ consolidated sanctions list following...                      │
+│                                                               │
+│ 🇬🇧 🇹🇷  HS: 7208  7209                                        │
+│                                                               │
+│ Matched to your shipments: ABCD1234, EF567890                │
+│ match_reason: "party name ∩ sanctions list"                  │
+│                                                              │
+│ [Read more →]                                                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Fields to show per card:
+- `IntelEventBadge` for `event_type`
+- `ImpactBadge` for `impact_score`
+- Article `title` (clickable → `/intel/articles/:id`)
+- Published date (relative) + source name
+- `enrichment.summary` (truncated at 150 chars with "…")
+- Country flag emojis for `enrichment.countries`
+- HS chapter/heading chips for `enrichment.hs_chapters` / `hs_headings`
+- If `matches` non-empty: "Matched to your shipments: {short ids}" (each links to `/shipments/:id`)
+- `match_reason` shown as a small gray label
+
+**Unmatched articles**: show below matched, with a visual separator "Other trade news". These have empty `matches`.
+
+**Empty state**: Newspaper icon + "No trade intelligence available. Sources are polled hourly."
+
+---
+
+### 17.2 Intel Search Page (`/intel/search`)
+
+Reads `?q=` from query string, pre-fills search input.
+
+Calls `GET /api/v1/intel/search?q={q}` on mount and on input change (debounce 400ms).
+
+**Layout**: search input (large, full-width) + results list using the same `IntelArticleCard` as feed.
+
+**Empty state** (no results): "No articles found for '{q}'."
+
+**Empty state** (no query): Prompt "Enter a search term — e.g. 'steel tariff', 'UK sanctions', 'HS 7208'"
+
+---
+
+### 17.3 Intel Article Page (`/intel/articles/:id`)
+
+Calls `GET /api/v1/intel/articles/:id`.
+
+**Layout**: single column.
+
+**Header section**:
+- `IntelEventBadge` + `ImpactBadge`
+- Article title (large)
+- Published date + source name + source URL (external link)
+
+**Enrichment section** (if enrichment exists):
+- Summary (full text, not truncated)
+- Countries: flag emoji + ISO code for each
+- HS Chapters / Headings: each as a chip → clicking navigates to intel search for that code
+- Regulation refs: list
+- Impact rationale (italic text)
+
+**Matched shipments section** (if matches non-empty):
+- "This article matches {n} of your shipments"
+- List: short shipment ID + match_reason + link to `/shipments/:id`
+
+**Full content section**:
+- Collapsible "View full source text" → shows `content_raw` in a scrollable pre/code block
+
+---
+
+### 17.4 Intel Alerts Page (`/intel/alerts`)
+
+Calls `GET /api/v1/intel/alerts`.
+
+**Header**: "Alerts" title
+
+**Alert list** — each row:
+- Delivery type badge (Email / In-App)
+- Subject
+- Status badge: green "Sent" / red "Failed"
+- Delivered at (relative date)
+- "View article" link → `/intel/articles/:article_id` (if `article_id` non-null)
+
+**Empty state**: Bell icon + "No alerts yet. Alerts are sent when high-impact trade events match your shipments."
+
+---
+
+### 17.5 Intel Sources Page (`/intel/sources`) — Admin only
+
+Non-admins see a 403 message.
+
+Calls `GET /api/v1/intel/sources`.
+
+**Header**: "Intelligence Sources" title
+
+**Sources table**:
+| Column | Notes |
+|---|---|
+| Name | Source name |
+| Type | `rss` / `scraper` / `sanctions_list` badge |
+| URL | Truncated, external link |
+| Cadence | "Every {n} min" |
+| Last polled | Relative date or "Never" |
+| Status | Green dot (active) / gray dot (inactive) + red "Error" badge if `last_error` non-null |
+| Actions | "Poll now" button → `POST /api/v1/intel/sources/:id/poll` → toast "Poll queued" |
+
+**Error tooltip**: hover the red "Error" badge to see `last_error` text.
+
+---
+
+### 17.6 Shipment Intel Panel (on Shipment Detail) — NEW
+
+Added to the Shipment Detail Page (`/shipments/:id`) as a new tab/section.
+
+Calls `GET /api/v1/shipments/:id/intel`.
+
+**Section header**: "Related Trade Events" + article count badge
+
+If articles exist: render compact `IntelArticleCard` list (no shipment match line needed since we're already in the shipment context).
+
+If no articles: info box "No trade events matched to this shipment yet. The system checks for matches when new articles are ingested."
+
+---
+
+### 17.7 Interests Management (side panel or inline on Feed page)
+
+Opened by "My Interests" button on the Intel Feed page.
+
+Calls `GET /api/v1/intel/interests`.
+
+**Layout**: grouped by `interest_type`.
+
+```
+HS Chapters       HS Headings       Countries        Party Names
+[72] [73] [+]    [7208] [7209] [+]  [🇬🇧 GB] [🇹🇷 TR] [+]   [+]
+```
+
+- Each `InterestChip` with delete × button (only for `is_explicit=true`)
+- Auto-seeded interests (dimmed): tooltip "Auto-detected from your shipments"
+- "+" button per group → opens `AddInterestDialog`
+
+**Add Interest Dialog**:
+- `interest_type` select: HS Chapter / HS Heading / Country / Party Name
+- `value` text input (e.g. "72", "7208", "GB", "Acme Steel")
+- Submit → `POST /api/v1/intel/interests`
+- On success: invalidate interests query, toast "Interest added"
+
+**Delete**: clicking × on an explicit interest → `DELETE /api/v1/intel/interests/:id` → toast "Interest removed"
+
+---
+
+### 17.8 Intel Analytics Page (`/intel/analytics`)
+
+Three charts with a shared date-range selector (7 / 30 / 90 / 365 days).
+
+**Country Heatmap** — calls `GET /api/v1/intel/analytics/heatmap?days=N`
+- World map or, simpler, a horizontal bar chart ranked by `article_count`
+- Each bar shows flag + ISO code + count
+- Clicking a country filters the feed by that country
+
+**By Event Type** — calls `GET /api/v1/intel/analytics/by-event-type?days=N`
+- Donut or bar chart; colour from `INTEL_EVENT_TYPE_COLORS`
+- Legend below with count labels
+
+**Impact Timeline** — calls `GET /api/v1/intel/analytics/impact-timeline?days=N`
+- Line chart: x = date, y = avg_impact_score (1–5)
+- Secondary bars: article_count per day on y2 axis
+
+**Trending Topics** — calls `GET /api/v1/intel/analytics/trending`
+- Tag cloud or table; `topic_type` filter chips (hs_chapter / country / event_type / commodity)
+- Each topic links to intel search for that term
+
+---
+
+### 17.9 Knowledge Graph Page (`/intel/knowledge-graph`)
+
+An interactive node-link graph (use `react-force-graph` or similar; fallback to a table for simple cases).
+
+**Search panel** (left):
+- `subject_type` select: country / hs_code / company / regulation
+- `subject_value` text input with autocomplete from `GET /api/v1/intel/tags/autocomplete?prefix=…`
+- "Explore" button → `GET /api/v1/intel/knowledge-graph?subject_type=…&subject_value=…`
+
+**Graph canvas** (right):
+- Nodes: subject (blue) + related objects (colour by `object_type`)
+- Edges labelled with `predicate`
+- Clicking a node sets it as the new subject and re-queries
+- `confidence` displayed on edge hover
+
+**Table fallback**: if fewer than 10 nodes, render a simple table of (subject → predicate → object) rows with `article_id` link.
+
+---
+
+### 17.10 Notification Preferences Page (`/intel/notifications`)
+
+Calls `GET /api/v1/intel/notifications/preferences` on load.
+
+**Form**:
+- **Min Impact Score** — slider 1–5 with label e.g. "Notify me for impact ≥ 3"
+- **Event Types** — multi-select checkboxes (all event types from `INTEL_EVENT_TYPE_LABELS`); empty = all
+- **Delivery Channels** — checkboxes: Email, In-App
+- **Active** — toggle switch
+
+**Save** → `PATCH /api/v1/intel/notifications/preferences` with changed fields only → toast "Preferences saved"
+
+---
+
+### 17.11 Intel Sources Page — Extended (Admin only)
+
+Extends section 17.5 with full CRUD:
+
+**Add Source** button → opens `AddSourceDialog`:
+- name, source_type (select), category (select), url, poll_cadence_minutes (number), is_active (toggle), priority (1–10)
+- Submit → `POST /api/v1/intel/sources`
+
+**Edit Source** (pencil icon per row) → `AddSourceDialog` pre-filled → `PATCH /api/v1/intel/sources/:id`
+
+**Deactivate** (trash icon) → confirm dialog → `DELETE /api/v1/intel/sources/:id` (soft-delete, sets `is_active=false`)
+
+**Extended table columns** (add to existing):
+| Column | Notes |
+|---|---|
+| Category | tariff / sanctions / regulation / trade_news badge |
+| Health | health_status badge: green "healthy" / amber "degraded" / red "dead" / gray "unknown" |
+| Articles | `articles_collected` count |
+| Priority | small number badge |
+
+---
+
+### 17.12 Intel Jobs Page (`/intel/jobs`) — Admin only
+
+Calls `GET /api/v1/intel/jobs?limit=100`.
+
+**Filter chips**: All / Pending / Running / Done / Failed  
+**Filter by type**: all / collect / parse / enrich / notify
+
+**Table**:
+| Column | Notes |
+|---|---|
+| Created | Relative time |
+| Source | source_id link to sources page |
+| Type | job_type badge |
+| Status | colour-coded badge |
+| Articles | articles_processed count |
+| Duration | completed_at − started_at (human-readable) |
+| Error | truncated error_message with expand tooltip |
+
+**Reprocess** button appears on rows with `status=failed` + `job_type=enrich` → `POST /api/v1/intel/admin/reprocess/:article_id`
+
+---
+
+### 17.13 Intel Source Health Dashboard (embedded in 17.11)
+
+Summary row above the sources table:
+- Total active sources
+- Healthy / Degraded / Dead counts
+- Articles ingested last 24h (sum of recent IntelJob `articles_processed`)
+
+Use distinct card chips with coloured borders for quick at-a-glance status.

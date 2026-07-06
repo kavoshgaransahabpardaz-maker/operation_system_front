@@ -26,6 +26,15 @@ export const queryKeys = {
   intelArticle: (id: string) => ['intelArticle', id] as const,
   shipmentIntel: (shipmentId: string) => ['shipmentIntel', shipmentId] as const,
   intelInterests: ['intelInterests'] as const,
-  intelAlerts: (params?: object) => ['intelAlerts', params] as const,
+  intelAlerts: ['intelAlerts'] as const,
   intelSources: ['intelSources'] as const,
+
+  intelNotificationPrefs: ['intelNotificationPrefs'] as const,
+  intelTrending: (params?: object) => ['intelTrending', params] as const,
+  intelHeatmap: (days: number) => ['intelHeatmap', days] as const,
+  intelByEventType: (days: number) => ['intelByEventType', days] as const,
+  intelTimeline: (days: number) => ['intelTimeline', days] as const,
+  intelKnowledgeGraph: (subjectType: string, subjectValue: string) => ['intelKnowledgeGraph', subjectType, subjectValue] as const,
+  intelJobs: (params?: object) => ['intelJobs', params] as const,
+  tagsAutocomplete: (prefix: string) => ['tagsAutocomplete', prefix] as const,
 };

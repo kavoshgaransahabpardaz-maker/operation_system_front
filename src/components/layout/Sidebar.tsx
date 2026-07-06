@@ -1,5 +1,8 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Files, Ship, Mail, Users, Settings, Boxes, Newspaper } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard, Files, Ship, Mail, Users, Settings, Boxes, Newspaper,
+  BookOpen, BarChart3, Bell, Network, Cpu, RefreshCw,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
@@ -8,19 +11,31 @@ const mainNav = [
   { icon: Files, label: 'Documents', to: '/documents' },
   { icon: Ship, label: 'Shipments', to: '/shipments' },
   { icon: Mail, label: 'Email', to: '/email' },
-  { icon: Newspaper, label: 'Intelligence', to: '/intel' },
+];
+
+const intelNav = [
+  { icon: Newspaper, label: 'Feed', to: '/intel' },
+  { icon: BookOpen, label: 'Interests', to: '/intel/interests' },
+  { icon: BarChart3, label: 'Analytics', to: '/intel/analytics' },
+  { icon: Network, label: 'Knowledge Graph', to: '/intel/knowledge-graph' },
+  { icon: Bell, label: 'Alerts', to: '/intel/alerts' },
+  { icon: Settings, label: 'Notifications', to: '/intel/notifications' },
 ];
 
 const adminNav = [
   { icon: Users, label: 'Team Members', to: '/settings/users' },
   { icon: Settings, label: 'Org Settings', to: '/settings/org' },
+  { icon: Cpu, label: 'Intel Sources', to: '/intel/sources' },
+  { icon: RefreshCw, label: 'Intel Jobs', to: '/intel/jobs' },
 ];
 
-function NavItem({ icon: Icon, label, to }: { icon: typeof LayoutDashboard; label: string; to: string }) {
+function NavItem({ icon: Icon, label, to, exact = false }: {
+  icon: typeof LayoutDashboard; label: string; to: string; exact?: boolean;
+}) {
   return (
     <NavLink
       to={to}
-      end
+      end={exact}
       className={({ isActive }) =>
         cn(
           'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
@@ -42,6 +57,8 @@ function NavItem({ icon: Icon, label, to }: { icon: typeof LayoutDashboard; labe
 
 export function Sidebar() {
   const { data: user } = useCurrentUser();
+  const location = useLocation();
+  const intelOpen = location.pathname.startsWith('/intel');
 
   return (
     <aside className="flex h-full w-56 shrink-0 flex-col bg-slate-900">
@@ -52,7 +69,7 @@ export function Sidebar() {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-white">
-            {user?.org_id ?? 'BrokerAI'}
+            {user?.org_id ?? 'Veritariff'}
           </p>
         </div>
       </div>
@@ -61,12 +78,27 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
         <div className="space-y-0.5">
           {mainNav.map((item) => (
-            <NavItem key={item.to} {...item} />
+            <NavItem key={item.to} {...item} exact={item.to === '/dashboard'} />
           ))}
         </div>
 
+        {/* Intelligence section */}
+        <div className="mt-5">
+          <p className={cn(
+            'mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest',
+            intelOpen ? 'text-blue-400' : 'text-slate-600'
+          )}>
+            Intelligence
+          </p>
+          <div className="space-y-0.5">
+            {intelNav.map((item) => (
+              <NavItem key={item.to} {...item} exact={item.to === '/intel'} />
+            ))}
+          </div>
+        </div>
+
         {user?.role === 'admin' && (
-          <div className="mt-6">
+          <div className="mt-5">
             <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
               Admin
             </p>

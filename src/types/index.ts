@@ -321,6 +321,12 @@ export interface IntelArticle {
   content_raw: string;
   published_at: string | null;
   ingested_at: string;
+  language: string | null;
+  author: string | null;
+  image_url: string | null;
+  word_count: number | null;
+  is_duplicate: boolean;
+  processing_status: 'raw' | 'parsed' | 'enriched' | 'failed';
 }
 
 export interface IntelEnrichment {
@@ -336,6 +342,20 @@ export interface IntelEnrichment {
   impact_rationale: string | null;
   model_version: string;
   enriched_at: string;
+  // Extended fields
+  industries: string[] | null;
+  companies: string[] | null;
+  commodities: string[] | null;
+  topics: string[] | null;
+  trade_agreements: string[] | null;
+  ports: string[] | null;
+  currencies: string[] | null;
+  severity: string | null;
+  urgency: string | null;
+  supply_chain_impact: string | null;
+  price_effect: string | null;
+  affected_industries: string[] | null;
+  affected_countries: string[] | null;
 }
 
 export interface IntelMatch {
@@ -359,12 +379,89 @@ export interface IntelSource {
   id: string;
   name: string;
   source_type: string | null;
+  category: string | null;
   url: string;
   poll_cadence_minutes: number;
   is_active: boolean;
   last_polled_at: string | null;
   last_error: string | null;
+  health_status: string;
+  articles_collected: number;
+  priority: number;
+  config: Record<string, unknown> | null;
   created_at: string;
+}
+
+export interface IntelJob {
+  id: string;
+  source_id: string | null;
+  job_type: string;
+  status: 'pending' | 'running' | 'done' | 'failed';
+  articles_processed: number;
+  error_message: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface TrendingTopic {
+  id: string;
+  topic: string;
+  topic_type: string;
+  article_count: number;
+  period_start: string;
+  period_end: string;
+  created_at: string;
+}
+
+export interface KnowledgeRelation {
+  id: string;
+  subject_type: string;
+  subject_value: string;
+  predicate: string;
+  object_type: string;
+  object_value: string;
+  article_id: string | null;
+  confidence: number;
+  created_at: string;
+}
+
+export interface NotificationPreference {
+  id: string;
+  org_id: string;
+  user_id: string;
+  min_impact_score: number;
+  event_types: IntelEventType[];
+  delivery_channels: ('email' | 'in_app')[];
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface HeatmapEntry {
+  country: string;
+  article_count: number;
+}
+
+export interface EventTypeCount {
+  event_type: IntelEventType;
+  article_count: number;
+}
+
+export interface ImpactTimelineEntry {
+  date: string;
+  avg_impact_score: number;
+  article_count: number;
+}
+
+export interface SearchResult {
+  article_id: string;
+  title: string;
+  url: string | null;
+  published_at: string | null;
+  ingested_at: string | null;
+  processing_status: string;
+  rank: number;
+  match_source: string;
 }
 
 export interface UserInterest {
