@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ArrowLeft } from 'lucide-react';
@@ -12,26 +12,56 @@ import { Pagination } from '@/components/shared/Pagination';
 import { IntelArticleCard } from './components/IntelArticleCard';
 
 const PAGE_SIZE = 20;
+const DEBOUNCE_MS = 400;
 
 export function IntelSearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQ = searchParams.get('q') ?? '';
   const [q, setQ] = useState(initialQ);
-  const [submittedQ, setSubmittedQ] = useState(initialQ);
+  const [debouncedQ, setDebouncedQ] = useState(initialQ);
   const [page, setPage] = useState(1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Sync from URL on navigation
   useEffect(() => {
     const qParam = searchParams.get('q') ?? '';
     setQ(qParam);
-    setSubmittedQ(qParam);
+    setDebouncedQ(qParam);
     setPage(1);
   }, [searchParams]);
 
+  // Debounce input changes
+  function handleInputChange(value: string) {
+    setQ(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQ(value.trim());
+      setPage(1);
+      if (value.trim()) {
+        const next = new URLSearchParams(searchParams);
+        next.set('q', value.trim());
+        setSearchParams(next, { replace: true });
+      }
+    }, DEBOUNCE_MS);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.trim()) {
+      const next = new URLSearchParams(searchParams);
+      next.set('q', q.trim());
+      setSearchParams(next, { replace: true });
+      setDebouncedQ(q.trim());
+      setPage(1);
+    }
+  }
+
   const { data: results, isLoading } = useQuery({
-    queryKey: queryKeys.intelSearch(submittedQ, { page }),
-    queryFn: () => intelApi.search(submittedQ, PAGE_SIZE).then((r) => r.data),
-    enabled: !!submittedQ.trim(),
+    queryKey: queryKeys.intelSearch(debouncedQ, { page }),
+    queryFn: () => intelApi.search(debouncedQ, PAGE_SIZE).then((r) => r.data),
+    enabled: !!debouncedQ.trim(),
     placeholderData: (prev) => prev,
   });
 
@@ -39,17 +69,6 @@ export function IntelSearchPage() {
   const paged = results?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? [];
   const total = paged.length;
   const hasMore = results ? results.length > page * PAGE_SIZE : false;
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (q.trim()) {
-      const next = new URLSearchParams(searchParams);
-      next.set('q', q.trim());
-      setSearchParams(next, { replace: true });
-      setSubmittedQ(q.trim());
-      setPage(1);
-    }
-  }
 
   return (
     <div className="space-y-5">
@@ -62,7 +81,7 @@ export function IntelSearchPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               placeholder="Search trade intelligence…"
               className="pl-9"
               autoFocus
@@ -72,20 +91,24 @@ export function IntelSearchPage() {
         </form>
       </div>
 
-      {submittedQ && (
+      {debouncedQ && (
         <p className="text-sm text-muted-foreground">
-          Results for <strong>"{submittedQ}"</strong>
+          Results for <strong>"{debouncedQ}"</strong>
           {results ? ` — ${results.length} found` : ''}
         </p>
       )}
 
       {isLoading ? (
         <Spinner size="lg" className="py-16" />
-      ) : !submittedQ ? null : !results?.length ? (
+      ) : !debouncedQ ? (
+        <p className="text-sm text-muted-foreground text-center py-10">
+          Enter a search term — e.g. 'steel tariff', 'UK sanctions', 'HS 7208'
+        </p>
+      ) : !results?.length ? (
         <EmptyState
           icon={Search}
           title="No results"
-          description={`No articles matched "${submittedQ}". Try different keywords or browse the feed.`}
+          description={`No articles matched "${debouncedQ}". Try different keywords or browse the feed.`}
           action={
             <Button variant="outline" onClick={() => navigate('/intel')}>
               Browse Feed

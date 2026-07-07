@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, Ship } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Ship, ChevronDown, ChevronUp } from 'lucide-react';
 import { intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ export function IntelArticlePage() {
   if (!data) return <p className="text-sm text-muted-foreground p-6">Article not found.</p>;
 
   const { article, enrichment, matches } = data;
+  const [contentExpanded, setContentExpanded] = useState(false);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -70,10 +72,18 @@ export function IntelArticlePage() {
         )}
 
         <div className="mt-4 border-t pt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Full Content</p>
-          <pre className="whitespace-pre-wrap text-xs text-slate-700 font-sans leading-relaxed">
-            {article.content_raw}
-          </pre>
+          <button
+            className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-700"
+            onClick={() => setContentExpanded((v) => !v)}
+          >
+            View full source text
+            {contentExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+          {contentExpanded && (
+            <pre className="mt-3 max-h-96 overflow-y-auto whitespace-pre-wrap text-xs text-slate-700 font-sans leading-relaxed rounded bg-slate-50 p-3">
+              {article.content_raw}
+            </pre>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
@@ -46,7 +47,7 @@ export function IntelAlertsPage() {
                   <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{alert.body_summary}</p>
                 )}
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 text-right space-y-1">
                 <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                   alert.delivery_type === 'email'
                     ? 'bg-blue-50 text-blue-700'
@@ -54,7 +55,15 @@ export function IntelAlertsPage() {
                 }`}>
                   {alert.delivery_type}
                 </span>
-                <p className="mt-1 text-xs text-muted-foreground">{formatRelative(alert.delivered_at)}</p>
+                <p className="text-xs text-muted-foreground">{formatRelative(alert.delivered_at)}</p>
+                {alert.article_id && (
+                  <Link
+                    to={`/intel/articles/${alert.article_id}`}
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  >
+                    View article <ExternalLink className="h-3 w-3" />
+                  </Link>
+                )}
               </div>
             </div>
           ))}
