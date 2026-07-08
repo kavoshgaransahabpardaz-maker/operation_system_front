@@ -117,6 +117,9 @@ export function ShipmentDetailPage() {
   if (!detail) return <p className="mt-20 text-center text-muted-foreground">Shipment not found.</p>;
 
   const openFlags = flags?.filter((f) => f.status === 'open') ?? [];
+  const sanctionFlags = openFlags.filter(
+    (f) => f.severity === 'critical' && f.flag_type === 'mismatch' && f.title.toLowerCase().includes('sanction'),
+  );
 
   return (
     <div className="space-y-6">
@@ -140,6 +143,27 @@ export function ShipmentDetailPage() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Sanctions banner — shown before the general flags banner */}
+      {sanctionFlags.length > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border-2 border-red-500 bg-red-50 p-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 text-red-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-red-800">Sanctions Alert</p>
+            <ul className="mt-1 space-y-0.5">
+              {sanctionFlags.map((f) => (
+                <li key={f.id} className="text-xs text-red-700">{f.title}</li>
+              ))}
+            </ul>
+            <p className="mt-1 text-xs text-red-600">
+              Sanctions flags must be reviewed. Do not dismiss without explicit compliance approval.
+            </p>
+          </div>
+          <a href="#flags-panel" className="shrink-0 text-xs text-red-700 underline hover:no-underline">
+            Review
+          </a>
+        </div>
+      )}
 
       {/* Open flags banner */}
       {openFlags.length > 0 && (
@@ -226,46 +250,54 @@ export function ShipmentDetailPage() {
       {/* Extracted fields panel */}
       <ShipmentFieldsPanel shipmentId={id!} />
 
-      {/* Shipment Intel panel */}
-      {intelItems && intelItems.length > 0 && (
-        <div className="rounded-xl border bg-background">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Newspaper className="h-4 w-4 text-blue-500" />
-              <h2 className="font-semibold">Trade Intelligence</h2>
+      {/* Shipment Intel panel — always shown */}
+      <div className="rounded-xl border bg-background">
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Newspaper className="h-4 w-4 text-blue-500" />
+            <h2 className="font-semibold">Related Trade Events</h2>
+            {intelItems && intelItems.length > 0 && (
               <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
                 {intelItems.length}
               </span>
-            </div>
-            <button
-              onClick={() => navigate('/intel')}
-              className="text-xs text-blue-600 hover:underline"
-            >
-              View all
-            </button>
-          </div>
-          <div className="p-4 space-y-3">
-            <p className="text-xs text-muted-foreground">
-              Events matched to this shipment. Impact scores are model estimates — not verified compliance flags.
-            </p>
-            {intelItems.slice(0, 3).map((item) => (
-              <IntelArticleCard
-                key={item.article.id}
-                item={item}
-                onClick={() => navigate(`/intel/articles/${item.article.id}`)}
-              />
-            ))}
-            {intelItems.length > 3 && (
-              <button
-                onClick={() => navigate('/intel')}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                +{intelItems.length - 3} more events
-              </button>
             )}
           </div>
+          <button
+            onClick={() => navigate('/intel')}
+            className="text-xs text-blue-600 hover:underline"
+          >
+            View all
+          </button>
         </div>
-      )}
+        <div className="p-4 space-y-3">
+          {!intelItems || intelItems.length === 0 ? (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+              No trade events matched to this shipment yet. The system checks for matches when new articles are ingested.
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Events matched to this shipment. Impact scores are model estimates — not verified compliance flags.
+              </p>
+              {intelItems.slice(0, 3).map((item) => (
+                <IntelArticleCard
+                  key={item.article.id}
+                  item={item}
+                  onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+                />
+              ))}
+              {intelItems.length > 3 && (
+                <button
+                  onClick={() => navigate('/intel')}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  +{intelItems.length - 3} more events
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Activity log */}
       <div className="rounded-xl border bg-background p-6">

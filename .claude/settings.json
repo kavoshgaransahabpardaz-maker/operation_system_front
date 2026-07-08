@@ -9,7 +9,8 @@
       "Bash(rtk tsc:*)",
       "Bash(rtk git:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(rtk grep:*)"
     ],
     "additionalDirectories": [
       "/Users/behnam/vscode/operating_system_cb_back/nginx/conf.d",

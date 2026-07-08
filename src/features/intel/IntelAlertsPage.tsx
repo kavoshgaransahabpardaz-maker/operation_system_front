@@ -18,7 +18,7 @@ export function IntelAlertsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold">Alert Delivery History</h2>
+        <h1 className="text-xl font-bold">Alerts</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Recent email and in-app alert deliveries.
         </p>

@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
-import { formatRelative } from '@/lib/utils';
+import { formatRelative, shortId } from '@/lib/utils';
 import { ImpactBadge } from '@/components/shared/ImpactBadge';
 import { IntelEventBadge } from '@/components/shared/IntelEventBadge';
 import type { IntelFeedItem } from '@/types';
@@ -9,9 +10,18 @@ interface IntelArticleCardProps {
   onClick?: () => void;
 }
 
+/** Convert ISO 3166-1 alpha-2 country code to a flag emoji. */
+function countryFlag(code: string): string {
+  const upper = code.toUpperCase();
+  if (upper.length !== 2) return '';
+  return String.fromCodePoint(
+    ...upper.split('').map((c) => 0x1f1e0 + c.charCodeAt(0) - 65),
+  );
+}
+
 export function IntelArticleCard({ item, onClick }: IntelArticleCardProps) {
-  const { article, enrichment, match_reason } = item;
-  const isMatched = !!match_reason;
+  const { article, enrichment, matches, match_reason } = item;
+  const isMatched = matches.length > 0 || !!match_reason;
 
   return (
     <div
@@ -37,7 +47,9 @@ export function IntelArticleCard({ item, onClick }: IntelArticleCardProps) {
             </h3>
             {enrichment?.summary && (
               <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">
-                {enrichment.summary}
+                {enrichment.summary.length > 150
+                  ? enrichment.summary.slice(0, 150) + '…'
+                  : enrichment.summary}
               </p>
             )}
           </div>
@@ -54,32 +66,59 @@ export function IntelArticleCard({ item, onClick }: IntelArticleCardProps) {
           )}
         </div>
 
-        {/* Match reason chip */}
-        {match_reason && (
-          <div className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">
-            <span className="font-semibold">Why this matters: </span>
-            {match_reason}
-          </div>
-        )}
-
-        {/* Entity chips */}
+        {/* Entity chips — countries with flag emojis, HS codes */}
         {(enrichment?.countries?.length || enrichment?.hs_chapters?.length || enrichment?.hs_headings?.length) && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {enrichment.countries?.map((c) => (
-              <span key={c} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                {c}
+            {enrichment?.countries?.map((c) => (
+              <span key={c} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+                <span>{countryFlag(c)}</span>
+                <span>{c}</span>
               </span>
             ))}
-            {enrichment.hs_chapters?.map((ch) => (
-              <span key={ch} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+            {enrichment?.hs_chapters?.map((ch) => (
+              <span key={ch} className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
                 HS ch.{ch}
               </span>
             ))}
-            {enrichment.hs_headings?.map((h) => (
-              <span key={h} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+            {enrichment?.hs_headings?.map((h) => (
+              <span key={h} className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
                 HS {h}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Matched shipments */}
+        {matches.length > 0 && (
+          <div
+            className="mt-3 text-xs text-slate-600"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="font-medium">Matched to your shipments: </span>
+            {matches
+              .filter((m) => m.shipment_id)
+              .map((m, i) => (
+                <span key={m.id}>
+                  {i > 0 && ', '}
+                  <Link
+                    to={`/shipments/${m.shipment_id}`}
+                    className="font-mono text-blue-600 hover:underline"
+                  >
+                    {shortId(m.shipment_id!)}
+                  </Link>
+                </span>
+              ))}
+            {match_reason && (
+              <p className="mt-0.5 text-slate-400 italic">{match_reason}</p>
+            )}
+          </div>
+        )}
+
+        {/* Match reason only (no individual shipment matches) */}
+        {matches.length === 0 && match_reason && (
+          <div className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">
+            <span className="font-semibold">Why this matters: </span>
+            {match_reason}
           </div>
         )}
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Ship, FileInput, Tag, AlertCircle, Mail, Upload, ArrowRight, Clock, Paperclip,
-  AlertTriangle, CheckSquare, Newspaper,
+  AlertTriangle, AlertOctagon, ScanSearch, Newspaper,
 } from 'lucide-react';
 import { workspaceApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -115,14 +115,14 @@ export function DashboardPage() {
         <StatCard
           label="Critical Issues"
           value={criticalFlags}
-          icon={AlertTriangle}
+          icon={AlertOctagon}
           accent={criticalFlags > 0 ? 'red' : 'default'}
           onClick={() => navigate('/shipments')}
         />
         <StatCard
           label="Fields to Review"
           value={pendingReviews}
-          icon={CheckSquare}
+          icon={ScanSearch}
           accent={pendingReviews > 0 ? 'amber' : 'default'}
           onClick={() => navigate('/shipments')}
         />

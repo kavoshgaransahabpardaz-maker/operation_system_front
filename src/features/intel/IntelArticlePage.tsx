@@ -98,14 +98,22 @@ export function IntelArticlePage() {
               </span>
             ))}
             {enrichment?.hs_chapters?.map((ch) => (
-              <span key={ch} className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+              <button
+                key={ch}
+                className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                onClick={() => navigate(`/intel/search?q=${encodeURIComponent(ch)}`)}
+              >
                 HS ch. {ch}
-              </span>
+              </button>
             ))}
             {enrichment?.hs_headings?.map((h) => (
-              <span key={h} className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+              <button
+                key={h}
+                className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                onClick={() => navigate(`/intel/search?q=${encodeURIComponent(h)}`)}
+              >
                 HS {h}
-              </span>
+              </button>
             ))}
             {enrichment?.regulation_refs?.map((r) => (
               <span key={r} className="rounded-full bg-purple-50 px-2.5 py-1 text-xs text-purple-700">
