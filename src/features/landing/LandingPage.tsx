@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   FileText, Mail, Shield, Users, BarChart3, ChevronRight, Check,
   Ship, Tag, ArrowRight, AlertTriangle, GitCompare, Newspaper,
-  Search, Bell, Lightbulb,
+  Search, Bell, Lightbulb, Network, Star, Globe2,
 } from 'lucide-react';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -47,9 +47,15 @@ const FEATURES = [
   },
   {
     icon: Newspaper,
-    title: 'Trade Intelligence Feed',
+    title: 'Personalised Trade Intelligence',
     description:
-      'Stay ahead of tariff changes, sanctions updates, and trade regulations relevant to your shipments. Events are matched to your HS codes, lanes, and parties — not a generic news feed.',
+      'Subscribe to HS codes, countries, trade lanes, industries, and party names. Your feed shows only what matters to your shipments — with AI-generated summaries tailored to your specific interests, not a generic news feed.',
+  },
+  {
+    icon: Network,
+    title: 'Knowledge Graph',
+    description:
+      'Explore the web of relationships between trade regulations, HS codes, countries, and parties. See how a new tariff ruling connects to your active lanes and suppliers — visually, not as a flat list.',
   },
   {
     icon: Lightbulb,
@@ -64,10 +70,22 @@ const FEATURES = [
       'Every extraction, correction, flag resolution, and status change is logged with who did it and when. Resolved flags never disappear — they collapse into an audit section. Always audit-ready.',
   },
   {
+    icon: Globe2,
+    title: 'Curated Source Preferences',
+    description:
+      'Control which trade intelligence sources feed into your dashboard. Enable or disable sources by category — regulatory bodies, industry publications, sanctions lists — so your feed stays signal, not noise.',
+  },
+  {
+    icon: Star,
+    title: 'Interest-Based Alerts',
+    description:
+      'Set email alerts for HS chapters, headings, or 6-digit codes, specific countries, named parties, and industries. Critical sanctions hits automatically escalate to flags inside the affected shipment.',
+  },
+  {
     icon: Users,
     title: 'Team Management',
     description:
-      'Role-based access control for Admins, Managers, and Operators. Invite team members, manage permissions, and maintain a complete activity trail for compliance.',
+      'Role-based access control for Admins, Managers, and Operators. Invite team members by email — they sign in with Google, no passwords to manage. Full activity trail for compliance.',
   },
 ];
 
@@ -133,7 +151,7 @@ export function LandingPage() {
 
         <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 leading-relaxed">
           Veritariff classifies documents, extracts key fields, cross-checks for mismatches, and flags issues
-          — with every value traceable to its exact source page. Plus live trade intelligence matched to your shipments.
+          — with every value traceable to its exact source page. Plus personalised trade intelligence matched to your shipments, HS codes, and trade lanes.
         </p>
 
         <div className="mt-10 flex items-center justify-center gap-4">
@@ -181,7 +199,7 @@ export function LandingPage() {
           <div className="grid grid-cols-12 divide-x divide-gray-200">
             {/* Sidebar */}
             <div className="col-span-2 bg-slate-900 p-3 space-y-0.5">
-              {['Dashboard', 'Documents', 'Shipments', 'Email', 'Intelligence'].map((item, i) => (
+              {['Dashboard', 'Documents', 'Shipments', 'Email', 'Intelligence', 'Sources'].map((item, i) => (
                 <div
                   key={item}
                   className={`rounded-md px-3 py-2 text-xs font-medium ${
@@ -203,7 +221,7 @@ export function LandingPage() {
                   { label: 'Needs Classification', value: '7', color: 'text-gray-900', bg: '' },
                   { label: 'Needs Review', value: '3', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
                   { label: 'Critical Issues', value: '2', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-                  { label: 'Fields to Review', value: '11', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+                  { label: 'Intel Matched', value: '11', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
                 ].map(({ label, value, color, bg }) => (
                   <div key={label} className={`rounded-xl border p-3 ${bg || 'bg-white border-gray-200'}`}>
                     <p className="text-[10px] text-gray-500 leading-tight">{label}</p>
@@ -219,22 +237,11 @@ export function LandingPage() {
                 <span className="ml-auto text-xs text-red-600 underline cursor-pointer">Review</span>
               </div>
 
-              {/* Mock flag */}
-              <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-                <div className="border-b border-gray-100 px-4 py-2.5 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-700">Issues (Flags)</span>
-                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">2 open</span>
-                </div>
-                {[
-                  { title: 'Invoice value mismatch', doc: 'commercial_invoice vs packing_list', sev: 'Critical', sevColor: 'bg-red-100 text-red-700' },
-                  { title: 'Missing packing list', doc: 'No packing list attached', sev: 'Warning', sevColor: 'bg-amber-100 text-amber-700' },
-                ].map((row) => (
-                  <div key={row.title} className="flex items-center gap-3 border-b border-gray-50 px-4 py-3 text-xs last:border-0">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${row.sevColor}`}>{row.sev}</span>
-                    <span className="font-medium text-gray-800 flex-1">{row.title}</span>
-                    <span className="text-gray-400 truncate">{row.doc}</span>
-                  </div>
-                ))}
+              {/* Mock intel card */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/40 px-4 py-3 flex items-center gap-3">
+                <Newspaper className="h-4 w-4 text-blue-500 shrink-0" />
+                <p className="text-xs font-medium text-blue-800">EU anti-dumping duty update matched to 4 shipments — <span className="underline cursor-pointer">View intel</span></p>
+                <span className="ml-auto rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">Impact 4/5</span>
               </div>
             </div>
           </div>
@@ -245,7 +252,7 @@ export function LandingPage() {
       <section id="features" className="mx-auto max-w-6xl px-6 py-24">
         <div className="mb-16 text-center">
           <h2 className="text-3xl font-semibold tracking-tight">Everything your operation needs</h2>
-          <p className="mt-3 text-gray-500">One platform for the entire compliance lifecycle.</p>
+          <p className="mt-3 text-gray-500">One platform for the entire compliance lifecycle — documents, shipments, and trade intelligence.</p>
         </div>
 
         <div className="grid gap-px bg-gray-200 sm:grid-cols-2 lg:grid-cols-3 rounded-2xl overflow-hidden">
@@ -283,7 +290,7 @@ export function LandingPage() {
           <div className="mt-20 overflow-hidden rounded-2xl border border-gray-200 bg-white p-8">
             <p className="mb-6 text-xs font-medium uppercase tracking-widest text-gray-400">Document pipeline</p>
             <div className="flex items-center gap-2 flex-wrap">
-              {['Uploaded', 'OCR Pending', 'Processing', 'Classified', 'Matched'].map((stage, i, arr) => (
+              {['Uploaded', 'OCR Pending', 'Processing', 'Fields Extracted', 'Matched'].map((stage, i, arr) => (
                 <div key={stage} className="flex items-center gap-2">
                   <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${
                     i === 3 ? 'bg-green-100 text-green-700'
@@ -330,10 +337,12 @@ export function LandingPage() {
             </p>
             <ul className="mt-8 space-y-4">
               {[
-                { icon: Search, text: 'Semantic search across all trade intelligence events' },
-                { icon: Bell, text: 'Email and in-app alerts for events matching your interests' },
-                { icon: Ship, text: 'Intel tab inside each shipment — events matched to that specific shipment' },
-                { icon: AlertTriangle, text: 'Sanctions hits surface as critical flags, not buried news items' },
+                { icon: Search, text: 'Semantic search and filters across all trade intelligence events' },
+                { icon: Bell, text: 'Email alerts for events matching your HS codes, countries, industries, and named parties' },
+                { icon: Lightbulb, text: 'AI-generated summaries of articles tailored to your specific active shipments and interests' },
+                { icon: Network, text: 'Knowledge graph to explore how regulations, parties, and HS codes interconnect' },
+                { icon: Ship, text: 'Intel tab inside each shipment — only events matched to that specific shipment' },
+                { icon: AlertTriangle, text: 'Sanctions hits escalate as critical flags, not buried news items' },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-3">
                   <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-100">
@@ -360,7 +369,7 @@ export function LandingPage() {
               {
                 type: 'Trade Agreement', typeColor: 'bg-green-100 text-green-700',
                 title: 'UK–India FTA: preferential rates for textile chapters 50–63',
-                reason: 'Lane IN→GB — 2 open shipments',
+                reason: 'Lane IN→GB — 2 open shipments, matches HS chapter 52',
                 impact: 'Impact 3/5',
                 impactColor: 'bg-amber-100 text-amber-700',
               },
@@ -377,6 +386,15 @@ export function LandingPage() {
                 </div>
               </div>
             ))}
+
+            {/* Personalised summary teaser */}
+            <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-4 space-y-1">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-500">AI Summary — your shipments</p>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                "This ruling directly affects shipment BL-2024-0041 (steel coils, CN→DE). The 12.4% additional duty applies from 01 Feb — consider adjusting the declared customs value before clearance."
+              </p>
+              <p className="text-[10px] text-gray-400">Generated from 3 matched interests: HS 7208, China, Steel Industry</p>
+            </div>
 
             <p className="text-[11px] italic text-gray-400">
               Impact scores are model estimates — not verified compliance flags. Sanctions hits appear as critical flags in each shipment's Flags tab.
@@ -432,7 +450,7 @@ export function LandingPage() {
             Ready to automate your compliance workflow?
           </h2>
           <p className="mt-4 text-gray-400">
-            Get started in minutes. No credit card required.
+            Sign up with Google in seconds. No credit card required.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link

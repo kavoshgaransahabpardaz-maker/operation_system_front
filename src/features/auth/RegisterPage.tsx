@@ -56,7 +56,7 @@ export function RegisterPage() {
       <div className="w-full max-w-sm space-y-6 rounded-xl border bg-background p-8 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold">Create organisation</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Set up your BrokerAI organisation</p>
+          <p className="mt-1 text-sm text-muted-foreground">Set up your Veritariff organisation</p>
         </div>
 
         {/* Step 1 — Google sign-in */}

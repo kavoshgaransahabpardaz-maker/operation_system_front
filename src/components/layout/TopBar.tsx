@@ -18,7 +18,7 @@ function getTitle(pathname: string): string {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
   if (pathname.startsWith('/documents/')) return 'Document Detail';
   if (pathname.startsWith('/shipments/')) return 'Shipment Detail';
-  return 'BrokerAI';
+  return 'Veritariff';
 }
 
 export function TopBar() {

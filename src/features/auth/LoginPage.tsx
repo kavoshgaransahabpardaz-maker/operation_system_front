@@ -19,7 +19,7 @@ export function LoginPage() {
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
       if (detail?.toLowerCase().includes('no account') || (err as { response?: { status?: number } }).response?.status === 401) {
-        setError('No BrokerAI account linked to this Google address. Ask your admin to invite you.');
+        setError('No Veritariff account linked to this Google address. Ask your admin to invite you.');
       } else {
         setError(detail ?? 'Sign-in failed. Please try again.');
       }
@@ -30,7 +30,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/20">
       <div className="w-full max-w-sm space-y-6 rounded-xl border bg-background p-8 shadow-sm text-center">
         <div>
-          <h1 className="text-2xl font-bold">BrokerAI</h1>
+          <h1 className="text-2xl font-bold">Veritariff</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
