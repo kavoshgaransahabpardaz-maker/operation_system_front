@@ -1,93 +1,67 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { authApi } from '@/api';
 import { session } from '@/lib/session';
-import type { AxiosError } from 'axios';
-
-const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-type FormData = z.infer<typeof schema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
+  const [error, setError] = useState<string | null>(null);
 
-  if (session.hasToken()) return <Navigate to="/" replace />;
+  if (session.hasToken()) return <Navigate to="/dashboard" replace />;
 
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
-
-  async function onSubmit(data: FormData) {
+  async function handleGoogleSuccess(credential: string) {
+    setError(null);
     try {
-      const res = await authApi.login(data.email, data.password);
+      const res = await authApi.googleLogin(credential);
       session.setToken(res.data.access_token);
-      navigate(from, { replace: true });
-    } catch (err) {
-      const msg =
-        (err as AxiosError<{ detail?: string }>).response?.data?.detail ?? 'Login failed.';
-      setError('root', { message: msg });
-      toast.error(msg);
+      navigate('/dashboard', { replace: true });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
+      if (detail?.toLowerCase().includes('no account') || (err as { response?: { status?: number } }).response?.status === 401) {
+        setError('No BrokerAI account linked to this Google address. Ask your admin to invite you.');
+      } else {
+        setError(detail ?? 'Sign-in failed. Please try again.');
+      }
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/20">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-background p-8 shadow-sm">
+      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-background p-8 shadow-sm text-center">
         <div>
           <h1 className="text-2xl font-bold">BrokerAI</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...register('email')} />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete="current-password" {...register('password')} />
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-          </div>
-
-          {errors.root && (
+        <div className="flex justify-center">
+          {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            <GoogleLogin
+              onSuccess={(res) => {
+                if (res.credential) handleGoogleSuccess(res.credential);
+              }}
+              onError={() => setError('Google sign-in failed. Please try again.')}
+              useOneTap={false}
+            />
+          ) : (
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {errors.root.message}
+              <strong>Config error:</strong> VITE_GOOGLE_CLIENT_ID is not set.
             </p>
           )}
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
-
-        <div className="space-y-1 text-center text-sm">
-          <p>
-            Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-primary hover:underline">
-              Register
-            </Link>
-          </p>
-          <p>
-            <Link to="/forgot-password" className="text-muted-foreground hover:underline">
-              Forgot password?
-            </Link>
-          </p>
         </div>
+
+        {error && (
+          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive text-left">
+            {error}
+          </p>
+        )}
+
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t have an organisation?{' '}
+          <Link to="/register" className="font-medium text-primary hover:underline">
+            Set one up →
+          </Link>
+        </p>
       </div>
     </div>
   );

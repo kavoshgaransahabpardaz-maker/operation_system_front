@@ -33,7 +33,6 @@ const ROLES: UserRole[] = ['admin', 'manager', 'operator'];
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, 'Minimum 8 characters'),
   role: z.enum(['admin', 'manager', 'operator']).default('operator'),
 });
 type InviteFormData = z.infer<typeof inviteSchema>;
@@ -115,11 +114,9 @@ export function UserManagementPage() {
                 <Input type="email" {...register('email')} />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
-              <div className="space-y-1">
-                <Label>Temporary password</Label>
-                <Input type="password" {...register('password')} />
-                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-              </div>
+              <p className="text-xs text-muted-foreground">
+                The invited user will sign in using Google with this email address.
+              </p>
               <div className="space-y-1">
                 <Label>Role</Label>
                 <Select value={watch('role')} onValueChange={(v) => setValue('role', v as UserRole)}>
