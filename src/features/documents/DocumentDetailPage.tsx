@@ -65,7 +65,7 @@ export function DocumentDetailPage() {
     queryFn: () => fieldsApi.listByDocument(id!).then((r) => r.data),
   });
 
-  const hasLowConfidenceFields = fields?.some((f) => f.status === 'low_confidence') ?? false;
+  const hasLowConfidenceFields = fields?.some((f) => f.confidence < 0.7) ?? false;
 
   const overrideMutation = useMutation({
     mutationFn: (doc_type: DocumentType) => classificationsApi.override(id!, doc_type),
