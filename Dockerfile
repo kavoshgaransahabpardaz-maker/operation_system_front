@@ -11,6 +11,8 @@ RUN npm install
 COPY . .
 # VITE_API_URL is intentionally left empty — Nginx proxies /api to the backend
 # so the SPA uses the same origin (no CORS, no hardcoded host)
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN npm run build
 
 # ── Stage 2: Serve ────────────────────────────────────────────────────────────

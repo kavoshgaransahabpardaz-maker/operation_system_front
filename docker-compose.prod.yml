@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+      args:
+        - VITE_GOOGLE_CLIENT_ID
     environment:
       - BACKEND_URL=https://api.veritariffai.co
     restart: unless-stopped
