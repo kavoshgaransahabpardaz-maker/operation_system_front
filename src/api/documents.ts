@@ -18,4 +18,6 @@ export const documentsApi = {
   get: (id: string) => apiClient.get<Document>(`/api/v1/documents/${id}`),
 
   duplicates: (id: string) => apiClient.get<DocumentListItem[]>(`/api/v1/documents/${id}/duplicates`),
+
+  delete: (id: string) => apiClient.delete(`/api/v1/documents/${id}`),
 };

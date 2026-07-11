@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload, Tag, Edit, Link as LinkIcon, ArrowLeftRight, Plus, RefreshCw, Mail,
-  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper,
+  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { workspaceApi, shipmentsApi, flagsApi, intelApi } from '@/api';
@@ -79,6 +79,7 @@ export function ShipmentDetailPage() {
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ShipmentStatus | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: detail, isLoading } = useQuery({
     queryKey: queryKeys.shipmentDetail(id!),
@@ -98,6 +99,18 @@ export function ShipmentDetailPage() {
   const { data: intelItems } = useQuery({
     queryKey: queryKeys.shipmentIntel(id!),
     queryFn: () => intelApi.shipmentIntel(id!).then((r) => r.data),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => shipmentsApi.delete(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipments });
+      toast.success('Shipment deleted');
+      navigate('/shipments');
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Delete failed.');
+    },
   });
 
   const statusMutation = useMutation({
@@ -142,7 +155,37 @@ export function ShipmentDetailPage() {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-auto text-muted-foreground hover:text-destructive"
+          onClick={() => setDeleteOpen(true)}
+          title="Delete shipment"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete shipment?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will delete shipment <strong>{shortId(detail.id)}</strong>. All linked documents will be kept but unlinked. Flags, intel matches, and references will be removed. This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete shipment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Sanctions banner — shown before the general flags banner */}
       {sanctionFlags.length > 0 && (

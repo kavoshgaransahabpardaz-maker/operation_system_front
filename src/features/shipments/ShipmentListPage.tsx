@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Ship } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ship, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { shipmentsApi, flagsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ReferenceChip } from '@/components/shared/ReferenceChip';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -44,7 +49,21 @@ function OpenFlagCount({ shipment }: { shipment: Shipment }) {
 
 export function ShipmentListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<ShipmentStatus | 'all'>('all');
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => shipmentsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipments });
+      toast.success('Shipment deleted');
+      setPendingDelete(null);
+    },
+    onError: () => {
+      toast.error('Delete failed.');
+    },
+  });
 
   const { data: shipments, isLoading } = useQuery({
     queryKey: queryKeys.shipments,
@@ -86,6 +105,7 @@ export function ShipmentListPage() {
                 <TableHead>Open Flags</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -118,12 +138,44 @@ export function ShipmentListPage() {
                   <TableCell className="text-sm text-muted-foreground">
                     {formatRelative(s.updated_at)}
                   </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => setPendingDelete(s.id)}
+                      title="Delete shipment"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <Dialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) setPendingDelete(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete shipment?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will delete shipment <strong>{pendingDelete ? shortId(pendingDelete) : ''}</strong>. All linked documents will be kept but unlinked. Flags, intel matches, and references will be removed. This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDelete(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => pendingDelete && deleteMutation.mutate(pendingDelete)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete shipment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

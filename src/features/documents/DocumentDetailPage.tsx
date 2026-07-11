@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, AlertTriangle } from 'lucide-react';
+import { ExternalLink, AlertTriangle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { documentsApi, classificationsApi, shipmentsApi, fieldsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -29,10 +29,12 @@ const PROCESSING_STATUSES = new Set(['ocr_pending', 'ocr_processing']);
 
 export function DocumentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('commercial_invoice');
   const [reassignShipment, setReassignShipment] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: doc, isLoading: docLoading } = useQuery({
     queryKey: queryKeys.document(id!),
@@ -91,6 +93,18 @@ export function DocumentDetailPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => documentsApi.delete(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents() });
+      toast.success('Document deleted');
+      navigate('/documents');
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Delete failed.');
+    },
+  });
+
   if (docLoading || classLoading) return <Spinner size="lg" className="mt-20" />;
   if (!doc) return <p className="mt-20 text-center text-muted-foreground">Document not found.</p>;
 
@@ -102,7 +116,37 @@ export function DocumentDetailPage() {
         <FileIcon contentType={doc.content_type} className="h-6 w-6" />
         <h1 className="text-xl font-bold">{doc.filename}</h1>
         <StatusBadge status={doc.status} />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-auto text-muted-foreground hover:text-destructive"
+          onClick={() => setDeleteOpen(true)}
+          title="Delete document"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete document?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will permanently delete <strong>{doc.filename}</strong> and all extracted data — fields, classification, and OCR results. The file will be removed from storage. This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete document'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Duplicate warning */}
       {duplicates && duplicates.length > 0 && (

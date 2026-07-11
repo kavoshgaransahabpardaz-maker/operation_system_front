@@ -13,4 +13,6 @@ export const shipmentsApi = {
     apiClient.post(`/api/v1/shipments/documents/${documentId}/reassociate`, {
       shipment_id: shipmentId,
     }),
+
+  delete: (id: string) => apiClient.delete(`/api/v1/shipments/${id}`),
 };

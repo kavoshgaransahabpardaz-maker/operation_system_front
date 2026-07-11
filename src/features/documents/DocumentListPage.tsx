@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Files, Upload, CloudUpload } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Files, Upload, CloudUpload, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { documentsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { FileIcon } from '@/components/shared/FileIcon';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -30,11 +31,25 @@ const STATUS_FILTERS: { label: string; value: DocumentStatus | 'all' }[] = [
 
 export function DocumentListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<DocumentStatus | 'all'>('all');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; filename: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { upload, uploading } = useUpload(() => setUploadOpen(false));
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => documentsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents() });
+      toast.success('Document deleted');
+      setPendingDelete(null);
+    },
+    onError: () => {
+      toast.error('Delete failed.');
+    },
+  });
 
   const { data: docs, isLoading } = useQuery({
     queryKey: queryKeys.documents(),
@@ -136,6 +151,7 @@ export function DocumentListPage() {
                 <TableHead>Size</TableHead>
                 <TableHead>Uploaded</TableHead>
                 <TableHead className="pr-5">Shipment</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,12 +186,44 @@ export function DocumentListPage() {
                   <TableCell className="pr-5 font-mono text-xs text-muted-foreground">
                     {doc.shipment_id ? shortId(doc.shipment_id) : <span className="text-slate-300">—</span>}
                   </TableCell>
+                  <TableCell className="pr-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => setPendingDelete({ id: doc.id, filename: doc.filename })}
+                      title="Delete document"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         )}
       </div>
+
+      <Dialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) setPendingDelete(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete document?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will permanently delete <strong>{pendingDelete?.filename}</strong> and all extracted data — fields, classification, and OCR results. The file will be removed from storage. This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDelete(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => pendingDelete && deleteMutation.mutate(pendingDelete.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete document'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
