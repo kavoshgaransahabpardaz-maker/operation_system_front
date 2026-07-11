@@ -1,5 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, ExternalLink, Ship, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
+import { intelApi } from '@/api';
+import { queryKeys } from '@/lib/queryKeys';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/shared/Spinner';
+import { ImpactBadge } from '@/components/shared/ImpactBadge';
+import { IntelEventBadge } from '@/components/shared/IntelEventBadge';
+import { formatRelative, shortId } from '@/lib/utils';
+import type { AxiosError } from 'axios';
 
 /** Convert ISO 3166-1 alpha-2 country code to a flag emoji. */
 function countryFlag(code: string): string {
@@ -9,19 +20,158 @@ function countryFlag(code: string): string {
     ...upper.split('').map((c) => 0x1f1e0 + c.charCodeAt(0) - 65),
   );
 }
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, Ship, ChevronDown, ChevronUp } from 'lucide-react';
-import { intelApi } from '@/api';
-import { queryKeys } from '@/lib/queryKeys';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/shared/Spinner';
-import { ImpactBadge } from '@/components/shared/ImpactBadge';
-import { IntelEventBadge } from '@/components/shared/IntelEventBadge';
-import { formatRelative, shortId } from '@/lib/utils';
+
+function ArticleFeedback({ articleId }: { articleId: string }) {
+  const qc = useQueryClient();
+
+  const { data: myFeedback } = useQuery({
+    queryKey: queryKeys.articleFeedback(articleId),
+    queryFn: () => intelApi.getMyFeedback(articleId).then((r) => r.data),
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (feedback: 'like' | 'dislike') =>
+      intelApi.submitFeedback(articleId, { feedback }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.articleFeedback(articleId) });
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Failed to submit feedback');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => intelApi.deleteFeedback(articleId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.articleFeedback(articleId) });
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Failed to remove feedback');
+    },
+  });
+
+  function handleClick(value: 'like' | 'dislike') {
+    if (myFeedback?.feedback === value) {
+      deleteMutation.mutate();
+    } else {
+      submitMutation.mutate(value);
+    }
+  }
+
+  const isPending = submitMutation.isPending || deleteMutation.isPending;
+
+  return (
+    <div className="mt-4 flex items-center gap-2 border-t pt-4">
+      <span className="text-xs text-muted-foreground mr-1">Was this useful?</span>
+      <button
+        type="button"
+        disabled={isPending}
+        onClick={() => handleClick('like')}
+        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+          myFeedback?.feedback === 'like'
+            ? 'bg-green-100 text-green-700 border-green-200'
+            : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'
+        }`}
+      >
+        <ThumbsUp className="h-3.5 w-3.5" /> Like
+      </button>
+      <button
+        type="button"
+        disabled={isPending}
+        onClick={() => handleClick('dislike')}
+        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+          myFeedback?.feedback === 'dislike'
+            ? 'bg-red-100 text-red-700 border-red-200'
+            : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'
+        }`}
+      >
+        <ThumbsDown className="h-3.5 w-3.5" /> Dislike
+      </button>
+    </div>
+  );
+}
+
+function PersonalizedSummarySection({ articleId }: { articleId: string }) {
+  const [requested, setRequested] = useState(false);
+
+  const { data: summary, isLoading, isError } = useQuery({
+    queryKey: queryKeys.personalizedSummary(articleId),
+    queryFn: () => intelApi.getPersonalizedSummary(articleId).then((r) => r.data),
+    enabled: requested,
+    retry: false,
+  });
+
+  if (!requested) {
+    return (
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-purple-500" />
+          <h2 className="text-sm font-semibold">Personalized Summary</h2>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setRequested(true)}>
+          Get my summary
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Spinner size="sm" />
+          Generating summary tailored to your interests…
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !summary) {
+    return (
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="h-4 w-4 text-purple-500" />
+          <h2 className="text-sm font-semibold">Personalized Summary</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Add interests to your profile to get personalized summaries.{' '}
+          <a href="/intel/interests" className="text-blue-600 hover:underline">Manage interests →</a>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border bg-white p-5 shadow-sm space-y-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-purple-500" />
+        <h2 className="text-sm font-semibold">Summary for your interests</h2>
+      </div>
+      <p className="text-sm text-slate-700">{summary.summary}</p>
+      {summary.relevant_interests.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-xs text-muted-foreground">Relevant to:</span>
+          {summary.relevant_interests.map((interest) => (
+            <span key={interest} className="rounded-full bg-purple-50 px-2 py-0.5 text-xs text-purple-700">
+              {interest}
+            </span>
+          ))}
+        </div>
+      )}
+      {summary.general_summary && summary.general_summary !== summary.summary && (
+        <details className="text-xs text-slate-500">
+          <summary className="cursor-pointer hover:text-slate-700">General summary</summary>
+          <p className="mt-1 leading-relaxed">{summary.general_summary}</p>
+        </details>
+      )}
+    </div>
+  );
+}
 
 export function IntelArticlePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [contentExpanded, setContentExpanded] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.intelArticle(id!),
@@ -33,7 +183,6 @@ export function IntelArticlePage() {
   if (!data) return <p className="text-sm text-muted-foreground p-6">Article not found.</p>;
 
   const { article, enrichment, matches } = data;
-  const [contentExpanded, setContentExpanded] = useState(false);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -94,7 +243,12 @@ export function IntelArticlePage() {
             </pre>
           )}
         </div>
+
+        {id && <ArticleFeedback articleId={id} />}
       </div>
+
+      {/* Personalized summary */}
+      {id && <PersonalizedSummarySection articleId={id} />}
 
       {/* Entity tags */}
       {(enrichment?.countries?.length || enrichment?.hs_chapters?.length || enrichment?.hs_headings?.length || enrichment?.regulation_refs?.length) && (

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Files, Ship, Mail, Users, Settings, Boxes, Newspaper,
-  Cpu, RefreshCw,
+  Cpu, RefreshCw, Globe2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -12,6 +12,7 @@ const mainNav = [
   { icon: Ship, label: 'Shipments', to: '/shipments' },
   { icon: Mail, label: 'Email', to: '/email' },
   { icon: Newspaper, label: 'Trade Intel', to: '/intel', exact: true },
+  { icon: Globe2, label: 'Sources', to: '/intel/sources/preferences' },
 ];
 
 const adminNav = [

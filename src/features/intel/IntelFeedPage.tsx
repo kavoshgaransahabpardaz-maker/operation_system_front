@@ -18,12 +18,6 @@ const EVENT_TYPES: IntelEventType[] = [
   'tariff_change', 'sanctions', 'regulation', 'trade_agreement', 'market_notice', 'other',
 ];
 
-const IMPACT_OPTIONS = [
-  { label: 'All', value: undefined },
-  { label: 'High (≥4)', value: 4 },
-  { label: 'Critical (5)', value: 5 },
-];
-
 const PAGE_SIZE = 20;
 
 export function IntelFeedPage() {
@@ -34,10 +28,22 @@ export function IntelFeedPage() {
 
   const eventType = searchParams.get('event_type') as IntelEventType | null;
   const minImpact = searchParams.get('min_impact') ? Number(searchParams.get('min_impact')) : undefined;
+  const country = searchParams.get('country') ?? undefined;
+  const industry = searchParams.get('industry') ?? undefined;
+  const matchedOnly = searchParams.get('matched_only') === 'true';
+
+  // Load filter options for dynamic country/industry lists
+  const { data: filterOptions } = useQuery({
+    queryKey: queryKeys.intelFilterOptions,
+    queryFn: () => intelApi.getFilterOptions().then((r) => r.data),
+  });
 
   const params = {
     event_type: eventType ?? undefined,
     min_impact: minImpact,
+    country,
+    industry,
+    matched_only: matchedOnly || undefined,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   };
@@ -53,7 +59,7 @@ export function IntelFeedPage() {
     const next = new URLSearchParams(searchParams);
     if (val) next.set(key, val); else next.delete(key);
     setSearchParams(next, { replace: true });
-    setPage(1); // reset page on filter change
+    setPage(1);
   }
 
   const matched = feed?.filter((item) => item.matches.length > 0) ?? [];
@@ -84,8 +90,9 @@ export function IntelFeedPage() {
           </Button>
         </div>
 
-        {/* Filters */}
+        {/* Filter bar */}
         <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {/* Event type */}
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setFilter('event_type', null)}
@@ -108,9 +115,49 @@ export function IntelFeedPage() {
             ))}
           </div>
 
+          {/* Country */}
+          {filterOptions && filterOptions.countries.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400">Country:</span>
+              <select
+                value={country ?? ''}
+                onChange={(e) => setFilter('country', e.target.value || null)}
+                className="rounded-md border bg-white px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
+              >
+                <option value="">All countries</option>
+                {filterOptions.countries.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Industry */}
+          {filterOptions && filterOptions.industries.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400">Industry:</span>
+              <select
+                value={industry ?? ''}
+                onChange={(e) => setFilter('industry', e.target.value || null)}
+                className="rounded-md border bg-white px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
+              >
+                <option value="">All industries</option>
+                {filterOptions.industries.map((ind) => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Min impact */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-400">Impact:</span>
-            {IMPACT_OPTIONS.map((opt) => (
+            {[
+              { label: 'All', value: undefined },
+              { label: '≥3', value: 3 },
+              { label: '≥4', value: 4 },
+              { label: '5 only', value: 5 },
+            ].map((opt) => (
               <button
                 key={opt.label}
                 onClick={() => setFilter('min_impact', opt.value ? String(opt.value) : null)}
@@ -122,6 +169,16 @@ export function IntelFeedPage() {
               </button>
             ))}
           </div>
+
+          {/* Matched only */}
+          <button
+            onClick={() => setFilter('matched_only', matchedOnly ? null : 'true')}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              matchedOnly ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            My shipments only
+          </button>
         </div>
 
         {isLoading ? (
@@ -196,6 +253,7 @@ export function IntelFeedPage() {
               { label: 'Analytics', path: '/intel/analytics' },
               { label: 'Alerts', path: '/intel/alerts' },
               { label: 'Notifications', path: '/intel/notifications' },
+              { label: 'Manage Sources', path: '/intel/sources/preferences' },
             ].map(({ label, path }) => (
               <button
                 key={path}
@@ -209,7 +267,7 @@ export function IntelFeedPage() {
         </div>
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">
-            <strong>Impact scores</strong> are model estimates — not verified compliance flags. Sanctions hits appear as critical flags in each shipment's Flags tab.
+            <strong>Impact scores</strong> are model estimates — not verified compliance flags. Sanctions hits appear as critical flags in each shipment&apos;s Flags tab.
           </p>
         </div>
       </aside>

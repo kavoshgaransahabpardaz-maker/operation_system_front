@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,14 +12,25 @@ import { Spinner } from '@/components/shared/Spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import type { AxiosError } from 'axios';
 
 const schema = z.object({
   weight_qty_tolerance_pct: z.coerce.number().min(0).max(100),
   value_tolerance_pct: z.coerce.number().min(0).max(100),
   name_match_threshold_pct: z.coerce.number().min(0).max(100),
+  doc_organization_by: z.enum(['shipment', 'client', 'lane', 'date']),
+  auto_fix_threshold_pct: z.coerce.number().min(50).max(100),
+  email_critical_alerts: z.boolean(),
 });
 type FormData = z.infer<typeof schema>;
+
+const DOC_ORG_OPTIONS: { value: FormData['doc_organization_by']; label: string }[] = [
+  { value: 'shipment', label: 'Shipment' },
+  { value: 'client', label: 'Client' },
+  { value: 'lane', label: 'Lane' },
+  { value: 'date', label: 'Date' },
+];
 
 export function OrgSettingsPage() {
   const { data: user } = useCurrentUser();
@@ -34,6 +45,7 @@ export function OrgSettingsPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -43,6 +55,9 @@ export function OrgSettingsPage() {
         weight_qty_tolerance_pct: settings.weight_qty_tolerance_pct,
         value_tolerance_pct: settings.value_tolerance_pct,
         name_match_threshold_pct: Math.round(settings.name_match_threshold * 100),
+        doc_organization_by: settings.doc_organization_by ?? 'shipment',
+        auto_fix_threshold_pct: Math.round((settings.auto_fix_threshold ?? 0.95) * 100),
+        email_critical_alerts: settings.email_critical_alerts ?? true,
       });
     }
   }, [settings, reset]);
@@ -53,6 +68,9 @@ export function OrgSettingsPage() {
         weight_qty_tolerance_pct: data.weight_qty_tolerance_pct,
         value_tolerance_pct: data.value_tolerance_pct,
         name_match_threshold: data.name_match_threshold_pct / 100,
+        doc_organization_by: data.doc_organization_by,
+        auto_fix_threshold: data.auto_fix_threshold_pct / 100,
+        email_critical_alerts: data.email_critical_alerts,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orgSettings });
@@ -79,6 +97,7 @@ export function OrgSettingsPage() {
       <h1 className="text-2xl font-bold">Organisation Settings</h1>
 
       <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-6">
+        {/* Tolerance Settings */}
         <div className="rounded-xl border bg-background p-6 space-y-5">
           <div>
             <h2 className="font-semibold">Tolerance Settings</h2>
@@ -135,11 +154,76 @@ export function OrgSettingsPage() {
               <p className="text-xs text-destructive">{errors.name_match_threshold_pct.message}</p>
             )}
           </div>
-
-          <Button type="submit" disabled={mutation.isPending || !isDirty}>
-            {mutation.isPending ? 'Saving…' : 'Save Settings'}
-          </Button>
         </div>
+
+        {/* Orchestration Settings */}
+        <div className="rounded-xl border bg-background p-6 space-y-5">
+          <div>
+            <h2 className="font-semibold">Orchestration Settings</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              When auto-fix confidence exceeds the threshold, mismatches are resolved automatically.
+              Set higher to require more certainty before auto-fixing.
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="doc_org">Organise documents by</Label>
+            <select
+              id="doc_org"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
+              {...register('doc_organization_by')}
+            >
+              {DOC_ORG_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {errors.doc_organization_by && (
+              <p className="text-xs text-destructive">{errors.doc_organization_by.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="auto_fix">Auto-fix confidence threshold (%)</Label>
+            <Input
+              id="auto_fix"
+              type="number"
+              step="1"
+              min="50"
+              max="100"
+              {...register('auto_fix_threshold_pct')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Range: 50–100%. Stored as 0.0–1.0. Default: 95%.
+            </p>
+            {errors.auto_fix_threshold_pct && (
+              <p className="text-xs text-destructive">{errors.auto_fix_threshold_pct.message}</p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="email_alerts">Email me for critical trade events</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Sends emails for articles with impact score ≥ 4.
+              </p>
+            </div>
+            <Controller
+              name="email_critical_alerts"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  id="email_alerts"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+          </div>
+        </div>
+
+        <Button type="submit" disabled={mutation.isPending || !isDirty}>
+          {mutation.isPending ? 'Saving…' : 'Save Settings'}
+        </Button>
       </form>
 
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">

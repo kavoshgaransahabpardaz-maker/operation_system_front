@@ -37,4 +37,10 @@ export const queryKeys = {
   intelKnowledgeGraph: (subjectType: string, subjectValue: string) => ['intelKnowledgeGraph', subjectType, subjectValue] as const,
   intelJobs: (params?: object) => ['intelJobs', params] as const,
   tagsAutocomplete: (prefix: string) => ['tagsAutocomplete', prefix] as const,
+  intelFilterOptions: ['intelFilterOptions'] as const,
+  intelInterestTypes: ['intelInterestTypes'] as const,
+  articleFeedback: (articleId: string) => ['articleFeedback', articleId] as const,
+  personalizedSummary: (articleId: string) => ['personalizedSummary', articleId] as const,
+  mySourcePreferences: ['mySourcePreferences'] as const,
+  knowledgeGraphStats: ['knowledgeGraphStats'] as const,
 };

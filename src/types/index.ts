@@ -156,6 +156,9 @@ export interface OrgSettings {
   weight_qty_tolerance_pct: number;
   value_tolerance_pct: number;
   name_match_threshold: number;
+  doc_organization_by: 'shipment' | 'client' | 'lane' | 'date';
+  auto_fix_threshold: number;
+  email_critical_alerts: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -307,9 +310,9 @@ export type IntelEventType =
   | 'market_notice'
   | 'other';
 
-export type InterestType = 'hs_chapter' | 'hs_heading' | 'country' | 'party_name';
+export type InterestType = 'hs_chapter' | 'hs_heading' | 'hs_code' | 'country' | 'party_name' | 'industry';
 
-export type AlertDeliveryType = 'email' | 'in_app';
+export type AlertDeliveryType = 'email';
 
 export type AlertDeliveryStatus = 'sent' | 'failed';
 
@@ -432,7 +435,7 @@ export interface NotificationPreference {
   user_id: string;
   min_impact_score: number;
   event_types: IntelEventType[];
-  delivery_channels: ('email' | 'in_app')[];
+  delivery_channels: ('email')[];
   is_active: boolean;
   created_at: string;
 }
@@ -482,4 +485,71 @@ export interface AlertDelivery {
   body_summary: string | null;
   delivered_at: string;
   status: AlertDeliveryStatus;
+}
+
+// ── Article feedback ───────────────────────────────────────────────────────
+
+export interface ArticleFeedback {
+  id: string;
+  article_id: string;
+  user_id: string;
+  feedback: 'like' | 'dislike';
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MyFeedback {
+  feedback: 'like' | 'dislike' | null;
+  comment: string | null;
+}
+
+// ── Interest type catalogue ────────────────────────────────────────────────
+
+export interface InterestTypeOption {
+  type: InterestType;
+  label: string;
+  description: string;
+  example: string;
+  format_hint: string;
+}
+
+// ── Source preference per org ──────────────────────────────────────────────
+
+export interface OrgSourcePreference {
+  id: string;
+  source_id: string;
+  source_name: string;
+  is_enabled: boolean;
+  created_at: string;
+}
+
+// ── Feed filter options ────────────────────────────────────────────────────
+
+export interface ImpactLevel {
+  level: number;
+  label: string;
+  description: string;
+}
+
+export interface EventTypeOption {
+  value: IntelEventType;
+  label: string;
+  description: string;
+}
+
+export interface FilterOptions {
+  countries: string[];
+  industries: string[];
+  event_types: EventTypeOption[];
+  impact_scale: ImpactLevel[];
+}
+
+// ── Personalized summary ───────────────────────────────────────────────────
+
+export interface PersonalizedSummary {
+  article_id: string;
+  summary: string;
+  relevant_interests: string[];
+  general_summary: string | null;
 }

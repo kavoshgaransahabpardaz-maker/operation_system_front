@@ -10,7 +10,7 @@ import { Spinner } from '@/components/shared/Spinner';
 import type { InterestType } from '@/types';
 import { INTEREST_TYPE_LABELS } from '@/lib/constants';
 
-const INTEREST_TYPES: InterestType[] = ['hs_chapter', 'hs_heading', 'country', 'party_name'];
+const INTEREST_TYPES: InterestType[] = ['hs_chapter', 'hs_heading', 'hs_code', 'country', 'party_name', 'industry'];
 
 export function IntelInterestsPanel() {
   const qc = useQueryClient();

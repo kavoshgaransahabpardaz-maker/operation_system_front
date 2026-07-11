@@ -172,6 +172,17 @@ export const IMPACT_SCORE_COLORS: Record<number, string> = {
 export const INTEREST_TYPE_LABELS: Record<InterestType, string> = {
   hs_chapter: 'HS Chapter',
   hs_heading: 'HS Heading',
+  hs_code: 'HS Code',
   country: 'Country',
   party_name: 'Party Name',
+  industry: 'Industry',
+};
+
+export const INTEREST_TYPE_FORMAT_HINTS: Record<InterestType, string> = {
+  hs_chapter: '2-digit number, e.g. 72',
+  hs_heading: '4-digit number, e.g. 7208',
+  hs_code: '6–10 digit number, e.g. 720851',
+  country: '2-letter ISO alpha-2 code, e.g. GB',
+  party_name: 'Free text, e.g. Acme Steel Ltd',
+  industry: 'Free text, e.g. Automotive',
 };

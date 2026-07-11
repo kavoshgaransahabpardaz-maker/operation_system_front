@@ -24,6 +24,7 @@ import { IntelAnalyticsPage } from '@/features/intel/IntelAnalyticsPage';
 import { IntelKnowledgeGraphPage } from '@/features/intel/IntelKnowledgeGraphPage';
 import { IntelNotificationsPage } from '@/features/intel/IntelNotificationsPage';
 import { IntelJobsPage } from '@/features/intel/IntelJobsPage';
+import { IntelSourcePreferencesPage } from '@/features/intel/IntelSourcePreferencesPage';
 
 export const router = createBrowserRouter([
   // Landing
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
           { path: '/intel/knowledge-graph', element: <IntelKnowledgeGraphPage /> },
           { path: '/intel/notifications', element: <IntelNotificationsPage /> },
           { path: '/intel/sources', element: <IntelSourcesPage /> },
+          { path: '/intel/sources/preferences', element: <IntelSourcePreferencesPage /> },
           { path: '/intel/jobs', element: <IntelJobsPage /> },
         ],
       },
