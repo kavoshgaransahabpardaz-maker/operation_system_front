@@ -1,5 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+
+/** Convert ISO 3166-1 alpha-2 country code to a flag emoji. */
+function countryFlag(code: string): string {
+  const upper = code.toUpperCase();
+  if (upper.length !== 2) return '';
+  return String.fromCodePoint(
+    ...upper.split('').map((c) => 0x1f1e0 + c.charCodeAt(0) - 65),
+  );
+}
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ExternalLink, Ship, ChevronDown, ChevronUp } from 'lucide-react';
 import { intelApi } from '@/api';
@@ -93,8 +102,9 @@ export function IntelArticlePage() {
           <h2 className="mb-3 text-sm font-semibold">Entities & References</h2>
           <div className="flex flex-wrap gap-2">
             {enrichment?.countries?.map((c) => (
-              <span key={c} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700">
-                {c}
+              <span key={c} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700">
+                <span>{countryFlag(c)}</span>
+                <span>{c}</span>
               </span>
             ))}
             {enrichment?.hs_chapters?.map((ch) => (
@@ -127,7 +137,7 @@ export function IntelArticlePage() {
       {/* Shipment matches */}
       {matches.length > 0 && (
         <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold">Matched Shipments</h2>
+          <h2 className="mb-3 text-sm font-semibold">This article matches {matches.length} of your shipments</h2>
           <div className="space-y-2">
             {matches.map((m) => (
               <div key={m.id} className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">

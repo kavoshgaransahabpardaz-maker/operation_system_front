@@ -15,7 +15,15 @@ export function IntelKnowledgeGraphPage() {
   const navigate = useNavigate();
   const [subjectType, setSubjectType] = useState<SubjectType>('hs_code');
   const [subjectValue, setSubjectValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [submitted, setSubmitted] = useState<{ type: SubjectType; value: string } | null>(null);
+  const autocompletePrefix = subjectValue.trim().length >= 2 ? subjectValue.trim() : '';
+
+  const { data: suggestions } = useQuery({
+    queryKey: queryKeys.tagsAutocomplete(autocompletePrefix),
+    queryFn: () => intelApi.tagsAutocomplete(autocompletePrefix).then((r) => r.data),
+    enabled: autocompletePrefix.length >= 2,
+  });
 
   const { data: relations, isLoading } = useQuery({
     queryKey: queryKeys.intelKnowledgeGraph(submitted?.type ?? '', submitted?.value ?? ''),
@@ -60,10 +68,28 @@ export function IntelKnowledgeGraphPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={subjectValue}
-              onChange={(e) => setSubjectValue(e.target.value)}
+              onChange={(e) => { setSubjectValue(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder="e.g. 7208, GB, Acme Steel…"
               className="pl-9"
             />
+            {showSuggestions && suggestions && suggestions.length > 0 && (
+              <ul className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-lg py-1">
+                {suggestions.map((s) => (
+                  <li key={s}>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setSubjectValue(s); setShowSuggestions(false); }}
+                    >
+                      {s}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <Button type="submit" disabled={!subjectValue.trim()}>
             Explore

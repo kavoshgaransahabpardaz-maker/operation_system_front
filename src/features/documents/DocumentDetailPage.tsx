@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { documentsApi, classificationsApi, shipmentsApi } from '@/api';
+import { documentsApi, classificationsApi, shipmentsApi, fieldsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
@@ -59,6 +59,13 @@ export function DocumentDetailPage() {
     queryKey: queryKeys.shipments,
     queryFn: () => shipmentsApi.list().then((r) => r.data),
   });
+
+  const { data: fields } = useQuery({
+    queryKey: queryKeys.documentFields(id!),
+    queryFn: () => fieldsApi.listByDocument(id!).then((r) => r.data),
+  });
+
+  const hasLowConfidenceFields = fields?.some((f) => f.status === 'low_confidence') ?? false;
 
   const overrideMutation = useMutation({
     mutationFn: (doc_type: DocumentType) => classificationsApi.override(id!, doc_type),
@@ -164,10 +171,10 @@ export function DocumentDetailPage() {
           <div className="mt-4">
             <p className="mb-2 text-xs font-medium text-muted-foreground">Processing status</p>
             <ol className="flex gap-1 text-xs">
-              {['uploaded', 'ocr_pending', 'ocr_processing', 'classified', 'matched'].map((s) => (
+              {['uploaded', 'ocr_pending', 'ocr_processing', 'classified', 'fields_extracted', 'matched'].map((s) => (
                 <li
                   key={s}
-                  className={`flex-1 rounded px-1 py-0.5 text-center capitalize ${
+                  className={`relative flex-1 rounded px-1 py-0.5 text-center capitalize ${
                     doc.status === s
                       ? 'bg-primary text-primary-foreground'
                       : doc.status === 'ocr_failed' && s === 'ocr_processing'
@@ -175,7 +182,12 @@ export function DocumentDetailPage() {
                         : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {s.replace('_', ' ')}
+                  {s.replace(/_/g, ' ')}
+                  {s === 'fields_extracted' && hasLowConfidenceFields && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" title="Low-confidence fields detected" />
+                    </span>
+                  )}
                 </li>
               ))}
             </ol>

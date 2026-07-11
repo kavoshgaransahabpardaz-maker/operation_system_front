@@ -150,6 +150,11 @@ export function IntelSourcesPage() {
     queryFn: () => intelApi.listSources().then((r) => r.data),
   });
 
+  const { data: recentJobs } = useQuery({
+    queryKey: queryKeys.intelJobs({ limit: 500, status: 'done' }),
+    queryFn: () => intelApi.listJobs({ limit: 500, status: 'done' }).then((r) => r.data),
+  });
+
   const pollMutation = useMutation({
     mutationFn: (sourceId: string) => intelApi.pollSource(sourceId),
     onSuccess: (r) => {
@@ -183,17 +188,22 @@ export function IntelSourcesPage() {
   const degraded = sources?.filter((s) => s.health_status === 'degraded').length ?? 0;
   const dead = sources?.filter((s) => s.health_status === 'dead').length ?? 0;
   const active = sources?.filter((s) => s.is_active).length ?? 0;
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const articlesLast24h = recentJobs?.reduce((sum, j) => {
+    return new Date(j.created_at).getTime() >= cutoff ? sum + (j.articles_processed ?? 0) : sum;
+  }, 0) ?? 0;
 
   return (
     <div className="space-y-6">
       {/* Health dashboard */}
       {sources && sources.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           {[
             { label: 'Active sources', value: active, color: 'text-slate-900' },
             { label: 'Healthy', value: healthy, color: 'text-green-700' },
             { label: 'Degraded', value: degraded, color: 'text-amber-700' },
             { label: 'Dead', value: dead, color: 'text-red-700' },
+            { label: 'Articles last 24h', value: articlesLast24h, color: 'text-blue-700' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-xl border bg-white p-4 shadow-sm">
               <p className="text-xs text-muted-foreground">{label}</p>

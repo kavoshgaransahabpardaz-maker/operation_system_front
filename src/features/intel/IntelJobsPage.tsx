@@ -170,12 +170,12 @@ export function IntelJobsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {job.status === 'failed' && job.job_type === 'enrich' && job.source_id && (
+                    {job.status === 'failed' && job.job_type === 'enrich' && (
                       <Button
                         variant="outline"
                         size="sm"
                         className="h-6 text-xs px-2"
-                        onClick={() => reprocessMutation.mutate(job.source_id!)}
+                        onClick={() => reprocessMutation.mutate(job.id)}
                         disabled={reprocessMutation.isPending}
                       >
                         Reprocess
