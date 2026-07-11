@@ -25,14 +25,14 @@ export function IntelNotificationsPage() {
 
   const [minImpact, setMinImpact] = useState(3);
   const [eventTypes, setEventTypes] = useState<IntelEventType[]>([]);
-  const [channels, setChannels] = useState<('email' | 'in_app')[]>(['email', 'in_app']);
+  const [emailEnabled, setEmailEnabled] = useState(true);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (prefs) {
       setMinImpact(prefs.min_impact_score);
       setEventTypes(prefs.event_types);
-      setChannels(prefs.delivery_channels);
+      setEmailEnabled(prefs.delivery_channels.includes('email'));
       setIsActive(prefs.is_active);
     }
   }, [prefs]);
@@ -55,11 +55,6 @@ export function IntelNotificationsPage() {
     );
   }
 
-  function toggleChannel(ch: 'email' | 'in_app') {
-    setChannels((prev) =>
-      prev.includes(ch) ? prev.filter((x) => x !== ch) : [...prev, ch]
-    );
-  }
 
   if (isLoading) return <Spinner size="lg" className="mt-20" />;
 
@@ -144,32 +139,26 @@ export function IntelNotificationsPage() {
           )}
         </div>
 
-        {/* Channels */}
+        {/* Channels — email only (in_app removed) */}
         <div className="space-y-2">
           <p className="text-sm font-medium">Delivery channels</p>
-          <div className="space-y-2">
-            {(['email', 'in_app'] as const).map((ch) => (
-              <label key={ch} className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={channels.includes(ch)}
-                  onChange={() => toggleChannel(ch)}
-                  className="h-4 w-4 rounded accent-blue-600"
-                />
-                <div>
-                  <p className="text-sm">{ch === 'email' ? 'Email' : 'In-app'}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ch === 'email' ? 'Receive digest emails for matched events' : 'Show notification banners in the app'}
-                  </p>
-                </div>
-              </label>
-            ))}
-          </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={emailEnabled}
+              onChange={(e) => setEmailEnabled(e.target.checked)}
+              className="h-4 w-4 rounded accent-blue-600"
+            />
+            <div>
+              <p className="text-sm">Email alerts</p>
+              <p className="text-xs text-muted-foreground">Receive digest emails for matched trade events</p>
+            </div>
+          </label>
         </div>
 
         <Button
           className="w-full gap-2"
-          onClick={() => mutation.mutate({ min_impact_score: minImpact, event_types: eventTypes, delivery_channels: channels, is_active: isActive })}
+          onClick={() => mutation.mutate({ min_impact_score: minImpact, event_types: eventTypes, delivery_channels: emailEnabled ? ['email'] : [], is_active: isActive })}
           disabled={mutation.isPending}
         >
           <Bell className="h-4 w-4" />
