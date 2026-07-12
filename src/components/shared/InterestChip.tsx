@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, countryFlag } from '@/lib/utils';
 import { INTEREST_TYPE_LABELS } from '@/lib/constants';
 import type { InterestType } from '@/types';
 
@@ -25,6 +25,9 @@ export function InterestChip({ interestType, value, isExplicit = true, onRemove,
       title={!isExplicit ? 'Auto-detected from your shipment history — cannot be removed' : undefined}
     >
       <span className={isExplicit ? 'text-slate-400' : 'text-slate-300'}>{typeLabel}:</span>
+      {interestType === 'country' && countryFlag(value) && (
+        <span>{countryFlag(value)}</span>
+      )}
       {value}
       {isExplicit && onRemove && (
         <button

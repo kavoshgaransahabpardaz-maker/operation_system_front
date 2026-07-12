@@ -13,8 +13,6 @@ import { DocumentDetailPage } from '@/features/documents/DocumentDetailPage';
 import { ShipmentListPage } from '@/features/shipments/ShipmentListPage';
 import { ShipmentDetailPage } from '@/features/shipments/ShipmentDetailPage';
 import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
-import { UserManagementPage } from '@/features/settings/UserManagementPage';
-import { OrgSettingsPage } from '@/features/settings/OrgSettingsPage';
 import { AdminPage } from '@/features/admin/AdminPage';
 import { TradeWatchFeedPage } from '@/features/intel/IntelFeedPage';
 import { IntelSearchPage } from '@/features/intel/IntelSearchPage';

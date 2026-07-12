@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/shared/Spinner';
 import { InterestChip } from '@/components/shared/InterestChip';
 import { INTEREST_TYPE_LABELS, INTEREST_TYPE_FORMAT_HINTS, INTEL_EVENT_TYPE_LABELS } from '@/lib/constants';
-import { cn } from '@/lib/utils';
+import { cn, countryFlag } from '@/lib/utils';
 import type { InterestType, UserInterest, IntelEventType, NotificationPreference } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -325,7 +325,7 @@ function InterestsStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
               >
                 <option value="">— quick add a country —</option>
                 {availableCountries.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                  <option key={c.code} value={c.code}>{countryFlag(c.code)} {c.name} ({c.code})</option>
                 ))}
               </select>
             </div>

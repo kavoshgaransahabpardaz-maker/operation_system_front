@@ -5,7 +5,7 @@ import { intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
 import { INTEL_EVENT_TYPE_LABELS, INTEL_EVENT_TYPE_COLORS, IMPACT_SCORE_COLORS } from '@/lib/constants';
-import { cn } from '@/lib/utils';
+import { cn, countryFlag } from '@/lib/utils';
 
 const DAY_OPTIONS = [7, 30, 90, 365] as const;
 type Days = typeof DAY_OPTIONS[number];
@@ -80,8 +80,9 @@ export function IntelAnalyticsPage() {
                   className="flex w-full items-center gap-3 group"
                   onClick={() => navigate(`/tradewatch?country=${h.country}`)}
                 >
-                  <span className="w-10 text-right text-xs font-mono text-slate-500 shrink-0">
-                    {h.country}
+                  <span className="w-14 text-right text-xs shrink-0 flex items-center justify-end gap-1">
+                    <span>{countryFlag(h.country)}</span>
+                    <span className="font-mono text-slate-500">{h.country}</span>
                   </span>
                   <div className="flex-1 h-4 rounded bg-slate-100 overflow-hidden">
                     <div

@@ -9,17 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
 import { ImpactBadge } from '@/components/shared/ImpactBadge';
 import { IntelEventBadge } from '@/components/shared/IntelEventBadge';
-import { formatRelative, shortId } from '@/lib/utils';
+import { formatRelative, shortId, countryFlag } from '@/lib/utils';
 import type { AxiosError } from 'axios';
-
-/** Convert ISO 3166-1 alpha-2 country code to a flag emoji. */
-function countryFlag(code: string): string {
-  const upper = code.toUpperCase();
-  if (upper.length !== 2) return '';
-  return String.fromCodePoint(
-    ...upper.split('').map((c) => 0x1f1e0 + c.charCodeAt(0) - 65),
-  );
-}
 
 function ArticleFeedback({ articleId }: { articleId: string }) {
   const qc = useQueryClient();

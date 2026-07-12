@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
-import { formatRelative, shortId } from '@/lib/utils';
+import { formatRelative, shortId, countryFlag } from '@/lib/utils';
 import { ImpactBadge } from '@/components/shared/ImpactBadge';
 import { IntelEventBadge } from '@/components/shared/IntelEventBadge';
 import type { IntelFeedItem } from '@/types';
@@ -10,14 +10,6 @@ interface IntelArticleCardProps {
   onClick?: () => void;
 }
 
-/** Convert ISO 3166-1 alpha-2 country code to a flag emoji. */
-function countryFlag(code: string): string {
-  const upper = code.toUpperCase();
-  if (upper.length !== 2) return '';
-  return String.fromCodePoint(
-    ...upper.split('').map((c) => 0x1f1e0 + c.charCodeAt(0) - 65),
-  );
-}
 
 export function IntelArticleCard({ item, onClick }: IntelArticleCardProps) {
   const { article, enrichment, matches, match_reason } = item;

@@ -4,6 +4,7 @@ import { Plus, BookOpen, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { countryFlag } from '@/lib/utils';
 import { InterestChip } from '@/components/shared/InterestChip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -280,7 +281,7 @@ function AddInterestForm({
               >
                 <option value="">— select a country —</option>
                 {availableCountries.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                  <option key={c.code} value={c.code}>{countryFlag(c.code)} {c.name} ({c.code})</option>
                 ))}
               </select>
             </div>
