@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, BookOpen } from 'lucide-react';
+import { Plus, BookOpen, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { intelApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -53,6 +53,110 @@ function validateInterestValue(type: InterestType, value: string): string | null
       break;
   }
   return null;
+}
+
+function HsFromDescriptionForm({ onAdded }: { onAdded: () => void }) {
+  const qc = useQueryClient();
+  const [description, setDescription] = useState('');
+  const [results, setResults] = useState<{ hs_headings: string[]; hs_chapters: string[]; rationale: string } | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const searchMutation = useMutation({
+    mutationFn: () => intelApi.hsFromDescription(description.trim()),
+    onSuccess: (res) => {
+      setResults(res.data);
+      setSelected(new Set());
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Failed to get suggestions');
+    },
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      for (const code of selected) {
+        const type = code.length === 2 ? 'hs_chapter' : 'hs_heading';
+        await intelApi.addInterest({ interest_type: type, value: code });
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.intelInterests });
+      toast.success(`Added ${selected.size} HS code${selected.size !== 1 ? 's' : ''}`);
+      setResults(null);
+      setDescription('');
+      onAdded();
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      toast.error(e.response?.data?.detail ?? 'Failed to add interests');
+    },
+  });
+
+  function toggleCode(code: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code); else next.add(code);
+      return next;
+    });
+  }
+
+  const allCodes = results ? [...results.hs_chapters, ...results.hs_headings] : [];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start gap-2">
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Describe your product, e.g. 'hot-rolled steel coils used in automotive manufacturing'"
+          rows={2}
+          className="flex-1 rounded-md border bg-white px-3 py-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none"
+        />
+        <Button
+          size="sm"
+          className="h-8 gap-1 shrink-0 mt-0.5"
+          onClick={() => searchMutation.mutate()}
+          disabled={!description.trim() || searchMutation.isPending}
+        >
+          {searchMutation.isPending ? <Spinner size="sm" /> : <Wand2 className="h-3.5 w-3.5" />}
+          Suggest
+        </Button>
+      </div>
+
+      {results && (
+        <div className="space-y-2">
+          {results.rationale && (
+            <p className="text-xs text-muted-foreground italic">{results.rationale}</p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {allCodes.map((code) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => toggleCode(code)}
+                className={`rounded-full border px-2.5 py-1 text-xs font-mono font-medium transition-colors ${
+                  selected.has(code)
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
+          {selected.size > 0 && (
+            <Button
+              size="sm"
+              className="h-7 gap-1"
+              onClick={() => addMutation.mutate()}
+              disabled={addMutation.isPending}
+            >
+              <Plus className="h-3.5 w-3.5" /> Add selected ({selected.size})
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function AddInterestForm({
@@ -278,11 +382,20 @@ export function IntelInterestsPage() {
       </div>
 
       {showAdd && (
-        <div className="rounded-xl border bg-white p-4 shadow-sm">
-          <AddInterestForm
-            onAdded={() => setShowAdd(false)}
-            existingInterests={interests ?? []}
-          />
+        <div className="rounded-xl border bg-white p-4 shadow-sm space-y-4">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1.5">
+              <Wand2 className="h-3.5 w-3.5" /> Describe your product
+            </p>
+            <HsFromDescriptionForm onAdded={() => setShowAdd(false)} />
+          </div>
+          <div className="border-t pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Or add manually</p>
+            <AddInterestForm
+              onAdded={() => setShowAdd(false)}
+              existingInterests={interests ?? []}
+            />
+          </div>
         </div>
       )}
 

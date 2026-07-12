@@ -90,41 +90,41 @@ export function DashboardPage() {
           value={data?.total_shipments ?? 0}
           icon={Ship}
           accent="blue"
-          onClick={() => navigate('/shipments')}
+          onClick={() => navigate('/workspace?tab=shipments')}
         />
         <StatCard
           label="Imported Today"
           value={data?.documents_imported_today ?? 0}
           icon={FileInput}
           accent="green"
-          onClick={() => navigate('/documents')}
+          onClick={() => navigate('/workspace?tab=documents')}
         />
         <StatCard
           label="Needs Classification"
           value={data?.unclassified_documents ?? 0}
           icon={Tag}
-          onClick={() => navigate('/documents')}
+          onClick={() => navigate('/workspace?tab=documents')}
         />
         <StatCard
           label="Needs Review"
           value={needsReview}
           icon={AlertCircle}
           accent={needsReview > 0 ? 'amber' : 'default'}
-          onClick={() => navigate('/shipments')}
+          onClick={() => navigate('/workspace?tab=shipments')}
         />
         <StatCard
           label="Critical Issues"
           value={criticalFlags}
           icon={AlertOctagon}
           accent={criticalFlags > 0 ? 'red' : 'default'}
-          onClick={() => navigate('/shipments')}
+          onClick={() => navigate('/workspace?tab=shipments')}
         />
         <StatCard
           label="Fields to Review"
           value={pendingReviews}
           icon={ScanSearch}
           accent={pendingReviews > 0 ? 'amber' : 'default'}
-          onClick={() => navigate('/shipments')}
+          onClick={() => navigate('/workspace?tab=shipments')}
         />
       </div>
 
@@ -135,7 +135,7 @@ export function DashboardPage() {
           <div className="rounded-xl border bg-white shadow-sm">
             <div className="flex items-center justify-between border-b px-5 py-3.5">
               <h3 className="text-sm font-semibold">Recent Email Imports</h3>
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => navigate('/email')}>
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => navigate('/workspace?tab=email')}>
                 Manage <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
@@ -146,7 +146,7 @@ export function DashboardPage() {
                   title="No email imports yet"
                   description="Connect a mailbox to start importing attachments automatically."
                   action={
-                    <Button size="sm" variant="outline" onClick={() => navigate('/email')}>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/workspace?tab=email')}>
                       Connect mailbox
                     </Button>
                   }
@@ -188,12 +188,12 @@ export function DashboardPage() {
               <div className="flex items-center justify-between border-b px-5 py-3.5">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-500" />
-                  <h3 className="text-sm font-semibold">Attention Required</h3>
+                  <h3 className="text-sm font-semibold">Shipments needing attention</h3>
                   <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
                     {attentionQueue.length}
                   </span>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => navigate('/shipments')}>
+                <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => navigate('/workspace?tab=shipments')}>
                   All shipments <ArrowRight className="h-3 w-3" />
                 </Button>
               </div>
@@ -260,17 +260,11 @@ export function DashboardPage() {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/documents')}>
-                <FileInput className="h-4 w-4" /> View Documents
+              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/workspace')}>
+                <FileInput className="h-4 w-4" /> View Workspace
               </Button>
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/shipments')}>
-                <Ship className="h-4 w-4" /> View Shipments
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/email')}>
-                <Mail className="h-4 w-4" /> Manage Email
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/intel')}>
-                <Newspaper className="h-4 w-4" /> Trade Intelligence
+              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/tradewatch')}>
+                <Newspaper className="h-4 w-4" /> TradeWatch
               </Button>
             </div>
           </div>
@@ -279,7 +273,7 @@ export function DashboardPage() {
             <button
               type="button"
               className="flex w-full items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left hover:bg-amber-100 transition-colors"
-              onClick={() => navigate('/shipments')}
+              onClick={() => navigate('/workspace?tab=shipments')}
             >
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <div className="min-w-0">

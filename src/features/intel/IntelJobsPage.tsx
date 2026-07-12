@@ -46,6 +46,11 @@ export function IntelJobsPage() {
   const { data: jobs, isLoading } = useQuery({
     queryKey: queryKeys.intelJobs(params),
     queryFn: () => intelApi.listJobs(params).then((r) => r.data),
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data?.some((j) => j.status === 'pending' || j.status === 'running')) return 5_000;
+      return false;
+    },
   });
 
   const reprocessMutation = useMutation({

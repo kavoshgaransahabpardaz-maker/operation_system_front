@@ -27,6 +27,7 @@ export type DocumentType =
   | 'mill_certificate'
   | 'suppliers_declaration'
   | 'cmr'
+  | 'phytosanitary_certificate'
   | 'other';
 
 export type EmailProvider = 'gmail' | 'microsoft365' | 'outlook' | 'imap';
@@ -67,7 +68,11 @@ export type FieldName =
   | 'incoterm'
   | 'invoice_date'
   | 'shipment_date'
-  | 'reference';
+  | 'reference'
+  | 'local_reference'
+  | 'destination_country'
+  | 'point_of_entry'
+  | 'commodity_description';
 
 export type FieldStatus = 'extracted' | 'confirmed' | 'corrected';
 
@@ -171,6 +176,7 @@ export interface User {
   org_id: string;
   role: UserRole;
   is_active: boolean;
+  onboarding_complete?: boolean;
   created_at: string;
 }
 
@@ -201,6 +207,7 @@ export interface DocumentListItem {
   source: DocumentSource;
   status: DocumentStatus;
   shipment_id: string | null;
+  doc_type?: DocumentType | null;
   created_at: string;
 }
 

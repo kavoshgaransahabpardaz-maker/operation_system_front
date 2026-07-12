@@ -16,6 +16,7 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   mill_certificate: 'Mill Certificate',
   suppliers_declaration: "Supplier's Declaration",
   cmr: 'CMR Consignment Note',
+  phytosanitary_certificate: 'Phytosanitary Certificate',
   other: 'Other',
 };
 
@@ -91,6 +92,10 @@ export const FIELD_NAME_LABELS: Record<FieldName, string> = {
   invoice_date: 'Invoice Date',
   shipment_date: 'Shipment Date',
   reference: 'Reference Number',
+  local_reference: 'Local Reference',
+  destination_country: 'Destination Country',
+  point_of_entry: 'Point of Entry',
+  commodity_description: 'Commodity Description',
 };
 
 // Zero-tolerance fields — any mismatch is always critical
@@ -145,7 +150,7 @@ export const ACCEPTED_FILE_TYPES = 'application/pdf,image/*';
 export const INTEL_EVENT_TYPE_LABELS: Record<IntelEventType, string> = {
   tariff_change: 'Tariff Change',
   sanctions: 'Sanctions',
-  regulation: 'Regulation',
+  regulation: 'Regulation Update',
   trade_agreement: 'Trade Agreement',
   market_notice: 'Market Notice',
   other: 'Other',

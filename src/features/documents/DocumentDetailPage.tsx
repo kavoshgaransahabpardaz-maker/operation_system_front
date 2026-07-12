@@ -193,7 +193,7 @@ export function DocumentDetailPage() {
                 <dt className="text-muted-foreground">Shipment</dt>
                 <dd>
                   <Link
-                    to={`/shipments/${doc.shipment_id}`}
+                    to={`/workspace/shipments/${doc.shipment_id}`}
                     className="font-mono text-primary hover:underline"
                   >
                     {shortId(doc.shipment_id)}

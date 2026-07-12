@@ -19,7 +19,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUpload } from '@/hooks/useUpload';
 import { formatBytes, formatRelative, shortId, cn } from '@/lib/utils';
-import { ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from '@/lib/constants';
+import { ACCEPTED_FILE_TYPES, DOC_TYPE_LABELS, MAX_FILE_BYTES } from '@/lib/constants';
 import type { DocumentStatus } from '@/types';
 
 const STATUS_FILTERS: { label: string; value: DocumentStatus | 'all' }[] = [
@@ -29,7 +29,7 @@ const STATUS_FILTERS: { label: string; value: DocumentStatus | 'all' }[] = [
   { label: 'Classified', value: 'classified' },
 ];
 
-export function DocumentListPage() {
+export function DocumentListPage({ shipmentId }: { shipmentId?: string } = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<DocumentStatus | 'all'>('all');
@@ -42,7 +42,7 @@ export function DocumentListPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => documentsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents() });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
       toast.success('Document deleted');
       setPendingDelete(null);
     },
@@ -52,8 +52,8 @@ export function DocumentListPage() {
   });
 
   const { data: docs, isLoading } = useQuery({
-    queryKey: queryKeys.documents(),
-    queryFn: () => documentsApi.list().then((r) => r.data),
+    queryKey: queryKeys.documents(shipmentId ? { shipment_id: shipmentId } : undefined),
+    queryFn: () => documentsApi.list(shipmentId).then((r) => r.data),
   });
 
   const filtered = docs?.filter((d) => filter === 'all' || d.status === filter) ?? [];
@@ -146,6 +146,7 @@ export function DocumentListPage() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="pl-5">File</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Size</TableHead>
@@ -168,6 +169,9 @@ export function DocumentListPage() {
                       </div>
                       <span className="max-w-[240px] truncate text-sm font-medium">{doc.filename}</span>
                     </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {doc.doc_type ? DOC_TYPE_LABELS[doc.doc_type] : <span className="text-slate-300">—</span>}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={doc.status} />

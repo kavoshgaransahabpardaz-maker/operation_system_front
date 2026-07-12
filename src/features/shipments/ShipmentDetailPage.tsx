@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload, Tag, Edit, Link as LinkIcon, ArrowLeftRight, Plus, RefreshCw, Mail,
-  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper, Trash2,
+  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper, Trash2, Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { workspaceApi, shipmentsApi, flagsApi, intelApi } from '@/api';
@@ -156,9 +156,17 @@ export function ShipmentDetailPage() {
           </SelectContent>
         </Select>
         <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto gap-1.5"
+          onClick={() => navigate(`/workspace?tab=documents&shipment_id=${id}`)}
+        >
+          <Files className="h-4 w-4" /> View Documents
+        </Button>
+        <Button
           variant="ghost"
           size="icon"
-          className="ml-auto text-muted-foreground hover:text-destructive"
+          className="text-muted-foreground hover:text-destructive"
           onClick={() => setDeleteOpen(true)}
           title="Delete shipment"
         >

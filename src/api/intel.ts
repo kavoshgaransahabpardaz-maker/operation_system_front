@@ -38,6 +38,14 @@ export const intelApi = {
   hsAutocomplete: (q: string) =>
     apiClient.get<{ results: { code: string; description: string }[] }>('/api/v1/intel/hs/autocomplete', { params: { q } }),
 
+  hsFromDescription: (description: string) =>
+    apiClient.post<{
+      hs_headings: string[];
+      hs_chapters: string[];
+      rationale: string;
+      description: string;
+    }>('/api/v1/intel/interests/from-description', { description }),
+
   // ── Interests ─────────────────────────────────────────────────────────────
 
   listInterests: () =>

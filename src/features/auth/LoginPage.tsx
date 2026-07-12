@@ -15,7 +15,8 @@ export function LoginPage() {
     try {
       const res = await authApi.googleLogin(credential);
       session.setToken(res.data.access_token);
-      navigate('/dashboard', { replace: true });
+      const user = await authApi.me().then((r) => r.data);
+      navigate(user.onboarding_complete === false ? '/onboarding' : '/dashboard', { replace: true });
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
       if (detail?.toLowerCase().includes('no account') || (err as { response?: { status?: number } }).response?.status === 401) {
