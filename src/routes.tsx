@@ -1,6 +1,7 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { AuthGuard } from '@/features/auth/AuthGuard';
+import { AdminGuard } from '@/features/admin/AdminGuard';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
@@ -14,6 +15,7 @@ import { ShipmentDetailPage } from '@/features/shipments/ShipmentDetailPage';
 import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
 import { UserManagementPage } from '@/features/settings/UserManagementPage';
 import { OrgSettingsPage } from '@/features/settings/OrgSettingsPage';
+import { AdminPage } from '@/features/admin/AdminPage';
 import { TradeWatchFeedPage } from '@/features/intel/IntelFeedPage';
 import { IntelSearchPage } from '@/features/intel/IntelSearchPage';
 import { IntelArticlePage } from '@/features/intel/IntelArticlePage';
@@ -67,11 +69,23 @@ export const router = createBrowserRouter([
           { path: '/shipments/:id', element: <ShipmentDetailPage /> },
           { path: '/email', element: <EmailConnectionsPage /> },
 
-          { path: '/settings/users', element: <UserManagementPage /> },
-          { path: '/settings/org', element: <OrgSettingsPage /> },
           { path: '/settings/notifications', element: <IntelNotificationsPage /> },
           { path: '/settings/interests', element: <IntelInterestsPage /> },
           { path: '/settings/sources', element: <SourcesPage /> },
+
+          // Legacy admin routes → redirect to admin panel
+          { path: '/settings/users', element: <Navigate to="/admin?tab=users" replace /> },
+          { path: '/settings/org', element: <Navigate to="/admin?tab=org" replace /> },
+          { path: '/intel/jobs', element: <Navigate to="/admin?tab=jobs" replace /> },
+          { path: '/intel/sources', element: <Navigate to="/admin?tab=sources" replace /> },
+
+          // Admin panel (nested AdminGuard inside AppShell)
+          {
+            element: <AdminGuard />,
+            children: [
+              { path: '/admin', element: <AdminPage /> },
+            ],
+          },
 
           // TradeWatch (new paths)
           { path: '/tradewatch', element: <TradeWatchFeedPage /> },

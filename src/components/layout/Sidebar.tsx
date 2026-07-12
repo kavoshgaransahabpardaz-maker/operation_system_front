@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, Settings, Boxes, Newspaper,
-  Briefcase, RefreshCw, LogOut, Bell, BookOpen, Globe,
+  LayoutDashboard, Users, Boxes, Newspaper,
+  Briefcase, LogOut, Bell, BookOpen, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -16,9 +16,7 @@ const mainNav = [
 ];
 
 const adminNav = [
-  { icon: Users, label: 'Users', to: '/settings/users' },
-  { icon: Settings, label: 'Org Settings', to: '/settings/org' },
-  { icon: RefreshCw, label: 'Intel Jobs', to: '/intel/jobs' },
+  { icon: Users, label: 'Admin Panel', to: '/admin', exact: true },
 ];
 
 function NavItem({ icon: Icon, label, to, exact = false }: {
