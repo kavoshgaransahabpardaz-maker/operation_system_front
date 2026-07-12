@@ -78,7 +78,7 @@ export function IntelAnalyticsPage() {
                 <button
                   key={h.country}
                   className="flex w-full items-center gap-3 group"
-                  onClick={() => navigate(`/intel?country=${h.country}`)}
+                  onClick={() => navigate(`/tradewatch?country=${h.country}`)}
                 >
                   <span className="w-10 text-right text-xs font-mono text-slate-500 shrink-0">
                     {h.country}
@@ -162,7 +162,7 @@ export function IntelAnalyticsPage() {
             {trending.map((t) => (
               <button
                 key={t.id}
-                onClick={() => navigate(`/intel/search?q=${encodeURIComponent(t.topic)}`)}
+                onClick={() => navigate(`/tradewatch/search?q=${encodeURIComponent(t.topic)}`)}
                 className="inline-flex items-center gap-1.5 rounded-full border bg-slate-50 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 {t.topic}

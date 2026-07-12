@@ -73,7 +73,7 @@ export function IntelSearchPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => navigate('/intel')}>
+        <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => navigate('/tradewatch')}>
           <ArrowLeft className="h-3.5 w-3.5" /> Feed
         </Button>
         <form className="flex flex-1 items-center gap-2" onSubmit={handleSubmit}>
@@ -110,7 +110,7 @@ export function IntelSearchPage() {
           title="No results"
           description={`No articles matched "${debouncedQ}". Try different keywords or browse the feed.`}
           action={
-            <Button variant="outline" onClick={() => navigate('/intel')}>
+            <Button variant="outline" onClick={() => navigate('/tradewatch')}>
               Browse Feed
             </Button>
           }
@@ -122,7 +122,7 @@ export function IntelSearchPage() {
               <IntelArticleCard
                 key={item.article.id}
                 item={item}
-                onClick={() => navigate(`/intel/articles/${item.article.id}`)}
+                onClick={() => navigate(`/tradewatch/articles/${item.article.id}`)}
               />
             ))}
           </div>
@@ -141,3 +141,5 @@ export function IntelSearchPage() {
     </div>
   );
 }
+
+export { IntelSearchPage as TradeWatchSearchPage };

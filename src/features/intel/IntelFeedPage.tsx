@@ -20,7 +20,7 @@ const EVENT_TYPES: IntelEventType[] = [
 
 const PAGE_SIZE = 20;
 
-export function IntelFeedPage() {
+export function TradeWatchFeedPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [q, setQ] = useState('');
@@ -79,13 +79,13 @@ export function IntelFeedPage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && q.trim()) navigate(`/intel/search?q=${encodeURIComponent(q)}`);
+                if (e.key === 'Enter' && q.trim()) navigate(`/tradewatch/search?q=${encodeURIComponent(q)}`);
               }}
               placeholder="Search trade intelligence…"
               className="pl-9"
             />
           </div>
-          <Button variant="outline" onClick={() => { if (q.trim()) navigate(`/intel/search?q=${encodeURIComponent(q)}`); }}>
+          <Button variant="outline" onClick={() => { if (q.trim()) navigate(`/tradewatch/search?q=${encodeURIComponent(q)}`); }}>
             Search
           </Button>
         </div>
@@ -189,7 +189,7 @@ export function IntelFeedPage() {
             title="No intelligence events yet"
             description="Add followed topics or connect more shipments to see matched events."
             action={
-              <Button variant="outline" onClick={() => navigate('/intel/interests')}>
+              <Button variant="outline" onClick={() => navigate('/settings/interests')}>
                 <BookOpen className="h-4 w-4 mr-2" /> Manage interests
               </Button>
             }
@@ -249,11 +249,9 @@ export function IntelFeedPage() {
           <p className="text-xs font-semibold text-slate-600">Quick links</p>
           <div className="space-y-1">
             {[
-              { label: 'My interests', path: '/intel/interests' },
-              { label: 'Analytics', path: '/intel/analytics' },
-              { label: 'Alerts', path: '/intel/alerts' },
-              { label: 'Notifications', path: '/intel/notifications' },
-              { label: 'Manage Sources', path: '/intel/sources/preferences' },
+              { label: 'My interests', path: '/settings/interests' },
+              { label: 'Analytics', path: '/tradewatch/analytics' },
+              { label: 'Manage Sources', path: '/settings/sources' },
             ].map(({ label, path }) => (
               <button
                 key={path}

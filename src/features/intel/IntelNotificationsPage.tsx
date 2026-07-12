@@ -105,9 +105,22 @@ export function IntelNotificationsPage() {
             <span className="text-xs text-slate-400">5</span>
             <span className="w-6 text-center text-sm font-bold text-blue-600">{minImpact}</span>
           </div>
-          <div className="flex justify-between text-[10px] text-slate-400">
-            <span>Informational</span>
-            <span>Immediate action</span>
+          <div className="rounded-lg bg-slate-50 border p-3 space-y-1.5 text-xs">
+            {[
+              { score: 1, label: 'Low', desc: 'Background context, no urgent action needed' },
+              { score: 2, label: 'Minor', desc: 'Worth monitoring, low direct trade impact' },
+              { score: 3, label: 'Moderate', desc: 'May affect costs, timelines, or compliance' },
+              { score: 4, label: 'High', desc: 'Likely affects your active shipments directly' },
+              { score: 5, label: 'Critical', desc: 'Immediate action required — sanctions, embargoes' },
+            ].map(({ score, label, desc }) => (
+              <div key={score} className={`flex items-start gap-2 ${score < minImpact ? 'opacity-30' : ''}`}>
+                <span className={`shrink-0 font-bold w-4 text-right ${
+                  score === 5 ? 'text-red-600' : score === 4 ? 'text-orange-500' : score === 3 ? 'text-yellow-500' : score === 2 ? 'text-blue-500' : 'text-slate-400'
+                }`}>{score}</span>
+                <span className="font-medium">{label}</span>
+                <span className="text-slate-500">— {desc}</span>
+              </div>
+            ))}
           </div>
         </div>
 

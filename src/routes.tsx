@@ -14,7 +14,7 @@ import { ShipmentDetailPage } from '@/features/shipments/ShipmentDetailPage';
 import { EmailConnectionsPage } from '@/features/email/EmailConnectionsPage';
 import { UserManagementPage } from '@/features/settings/UserManagementPage';
 import { OrgSettingsPage } from '@/features/settings/OrgSettingsPage';
-import { IntelFeedPage } from '@/features/intel/IntelFeedPage';
+import { TradeWatchFeedPage } from '@/features/intel/IntelFeedPage';
 import { IntelSearchPage } from '@/features/intel/IntelSearchPage';
 import { IntelArticlePage } from '@/features/intel/IntelArticlePage';
 import { IntelAlertsPage } from '@/features/intel/IntelAlertsPage';
@@ -24,7 +24,9 @@ import { IntelAnalyticsPage } from '@/features/intel/IntelAnalyticsPage';
 import { IntelKnowledgeGraphPage } from '@/features/intel/IntelKnowledgeGraphPage';
 import { IntelNotificationsPage } from '@/features/intel/IntelNotificationsPage';
 import { IntelJobsPage } from '@/features/intel/IntelJobsPage';
-import { IntelSourcePreferencesPage } from '@/features/intel/IntelSourcePreferencesPage';
+import { SourcesPage } from '@/features/intel/SourcesPage';
+import { WorkspacePage } from '@/features/workspace/WorkspacePage';
+import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 
 export const router = createBrowserRouter([
   // Landing
@@ -36,6 +38,14 @@ export const router = createBrowserRouter([
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/reset-password', element: <ResetPasswordPage /> },
 
+  // Onboarding (authenticated but outside AppShell)
+  {
+    element: <AuthGuard />,
+    children: [
+      { path: '/onboarding', element: <OnboardingPage /> },
+    ],
+  },
+
   // Authenticated routes
   {
     element: <AuthGuard />,
@@ -44,15 +54,34 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
+
+          // Workspace (unified Documents + Shipments + Email)
+          { path: '/workspace', element: <WorkspacePage /> },
+          { path: '/workspace/documents/:id', element: <DocumentDetailPage /> },
+          { path: '/workspace/shipments/:id', element: <ShipmentDetailPage /> },
+
+          // Legacy standalone routes (kept for backwards compat)
           { path: '/documents', element: <DocumentListPage /> },
           { path: '/documents/:id', element: <DocumentDetailPage /> },
           { path: '/shipments', element: <ShipmentListPage /> },
           { path: '/shipments/:id', element: <ShipmentDetailPage /> },
           { path: '/email', element: <EmailConnectionsPage /> },
+
           { path: '/settings/users', element: <UserManagementPage /> },
           { path: '/settings/org', element: <OrgSettingsPage /> },
-          // Trade Intelligence
-          { path: '/intel', element: <IntelFeedPage /> },
+          { path: '/settings/notifications', element: <IntelNotificationsPage /> },
+          { path: '/settings/interests', element: <IntelInterestsPage /> },
+          { path: '/settings/sources', element: <SourcesPage /> },
+
+          // TradeWatch (new paths)
+          { path: '/tradewatch', element: <TradeWatchFeedPage /> },
+          { path: '/tradewatch/search', element: <IntelSearchPage /> },
+          { path: '/tradewatch/articles/:id', element: <IntelArticlePage /> },
+          { path: '/tradewatch/analytics', element: <IntelAnalyticsPage /> },
+          { path: '/tradewatch/knowledge-graph', element: <IntelKnowledgeGraphPage /> },
+
+          // Legacy /intel/* routes (backwards compat)
+          { path: '/intel', element: <TradeWatchFeedPage /> },
           { path: '/intel/search', element: <IntelSearchPage /> },
           { path: '/intel/articles/:id', element: <IntelArticlePage /> },
           { path: '/intel/alerts', element: <IntelAlertsPage /> },
@@ -61,7 +90,7 @@ export const router = createBrowserRouter([
           { path: '/intel/knowledge-graph', element: <IntelKnowledgeGraphPage /> },
           { path: '/intel/notifications', element: <IntelNotificationsPage /> },
           { path: '/intel/sources', element: <IntelSourcesPage /> },
-          { path: '/intel/sources/preferences', element: <IntelSourcePreferencesPage /> },
+          { path: '/intel/sources/preferences', element: <SourcesPage /> },
           { path: '/intel/jobs', element: <IntelJobsPage /> },
         ],
       },

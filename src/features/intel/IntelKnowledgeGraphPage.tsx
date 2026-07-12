@@ -153,7 +153,7 @@ export function IntelKnowledgeGraphPage() {
                       {r.article_id ? (
                         <button
                           className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                          onClick={() => navigate(`/intel/articles/${r.article_id}`)}
+                          onClick={() => navigate(`/tradewatch/articles/${r.article_id}`)}
                         >
                           Article <ExternalLink className="h-3 w-3" />
                         </button>

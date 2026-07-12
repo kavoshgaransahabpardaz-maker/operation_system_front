@@ -135,7 +135,7 @@ function PersonalizedSummarySection({ articleId }: { articleId: string }) {
         </div>
         <p className="text-xs text-muted-foreground">
           Add interests to your profile to get personalized summaries.{' '}
-          <a href="/intel/interests" className="text-blue-600 hover:underline">Manage interests →</a>
+          <a href="/settings/interests" className="text-blue-600 hover:underline">Manage interests →</a>
         </p>
       </div>
     );
@@ -265,7 +265,7 @@ export function IntelArticlePage() {
               <button
                 key={ch}
                 className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
-                onClick={() => navigate(`/intel/search?q=${encodeURIComponent(ch)}`)}
+                onClick={() => navigate(`/tradewatch/search?q=${encodeURIComponent(ch)}`)}
               >
                 HS ch. {ch}
               </button>
@@ -274,7 +274,7 @@ export function IntelArticlePage() {
               <button
                 key={h}
                 className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
-                onClick={() => navigate(`/intel/search?q=${encodeURIComponent(h)}`)}
+                onClick={() => navigate(`/tradewatch/search?q=${encodeURIComponent(h)}`)}
               >
                 HS {h}
               </button>

@@ -43,4 +43,5 @@ export const queryKeys = {
   personalizedSummary: (articleId: string) => ['personalizedSummary', articleId] as const,
   mySourcePreferences: ['mySourcePreferences'] as const,
   knowledgeGraphStats: ['knowledgeGraphStats'] as const,
+  hsAutocomplete: (q: string) => ['hsAutocomplete', q] as const,
 };

@@ -35,6 +35,9 @@ export const intelApi = {
   tagsAutocomplete: (prefix: string) =>
     apiClient.get<string[]>('/api/v1/intel/tags/autocomplete', { params: { prefix } }),
 
+  hsAutocomplete: (q: string) =>
+    apiClient.get<{ results: { code: string; description: string }[] }>('/api/v1/intel/hs/autocomplete', { params: { q } }),
+
   // ── Interests ─────────────────────────────────────────────────────────────
 
   listInterests: () =>

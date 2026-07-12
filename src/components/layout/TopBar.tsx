@@ -7,15 +7,26 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
+  '/workspace': 'Workspace',
   '/documents': 'Documents',
   '/shipments': 'Shipments',
   '/email': 'Email Connections',
+  '/tradewatch': 'TradeWatch',
+  '/tradewatch/search': 'TradeWatch — Search',
+  '/tradewatch/analytics': 'TradeWatch — Analytics',
+  '/tradewatch/knowledge-graph': 'TradeWatch — Knowledge Graph',
   '/settings/users': 'Team Members',
   '/settings/org': 'Organisation Settings',
+  '/settings/notifications': 'Notification Preferences',
+  '/settings/interests': 'My Interests',
+  '/settings/sources': 'News Sources',
 };
 
 function getTitle(pathname: string): string {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  if (pathname.startsWith('/tradewatch/articles/')) return 'TradeWatch — Article';
+  if (pathname.startsWith('/workspace/documents/')) return 'Document Detail';
+  if (pathname.startsWith('/workspace/shipments/')) return 'Shipment Detail';
   if (pathname.startsWith('/documents/')) return 'Document Detail';
   if (pathname.startsWith('/shipments/')) return 'Shipment Detail';
   return 'Veritariff';
