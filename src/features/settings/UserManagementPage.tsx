@@ -119,7 +119,7 @@ export function UserManagementPage() {
               </p>
               <div className="space-y-1">
                 <Label>Role</Label>
-                <Select value={watch('role')} onValueChange={(v) => setValue('role', v as UserRole)}>
+                <Select value={watch('role')} onValueChange={(v) => setValue('role', v as InviteFormData['role'])}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
