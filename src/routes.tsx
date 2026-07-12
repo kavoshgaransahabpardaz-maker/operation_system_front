@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { AuthGuard } from '@/features/auth/AuthGuard';
 import { AdminGuard } from '@/features/admin/AdminGuard';
+import { SuperAdminGuard } from '@/features/superadmin/SuperAdminGuard';
+import { SuperAdminPage } from '@/features/superadmin/SuperAdminPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
@@ -82,6 +84,14 @@ export const router = createBrowserRouter([
             element: <AdminGuard />,
             children: [
               { path: '/admin', element: <AdminPage /> },
+            ],
+          },
+
+          // Super Admin panel
+          {
+            element: <SuperAdminGuard />,
+            children: [
+              { path: '/superadmin', element: <SuperAdminPage /> },
             ],
           },
 

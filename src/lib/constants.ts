@@ -73,6 +73,7 @@ export const REF_TYPE_COLORS: Record<ReferenceType, string> = {
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {
+  super_admin: 'Super Admin',
   admin: 'Admin',
   manager: 'Manager',
   operator: 'Operator',

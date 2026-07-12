@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/tradewatch/analytics': 'TradeWatch — Analytics',
   '/tradewatch/knowledge-graph': 'TradeWatch — Knowledge Graph',
   '/admin': 'Admin Panel',
+  '/superadmin': 'Super Admin',
   '/settings/notifications': 'Notification Preferences',
   '/settings/interests': 'My Interests',
   '/settings/sources': 'News Sources',

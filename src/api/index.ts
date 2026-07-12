@@ -10,3 +10,4 @@ export { flagsApi } from './flags';
 export { orgSettingsApi } from './orgSettings';
 export { intelApi } from './intel';
 export type { IntelFeedParams } from './intel';
+export { superAdminApi } from './superAdmin';

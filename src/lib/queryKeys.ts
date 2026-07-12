@@ -44,4 +44,10 @@ export const queryKeys = {
   mySourcePreferences: ['mySourcePreferences'] as const,
   knowledgeGraphStats: ['knowledgeGraphStats'] as const,
   hsAutocomplete: (q: string) => ['hsAutocomplete', q] as const,
+
+  superAdminUsers: (filters?: object) => ['superAdminUsers', filters] as const,
+  superAdminOrgs: ['superAdminOrgs'] as const,
+  superAdminSources: ['superAdminSources'] as const,
+  superAdminJobs: (filters?: object) => ['superAdminJobs', filters] as const,
+  superAdminAnalytics: ['superAdminAnalytics'] as const,
 };

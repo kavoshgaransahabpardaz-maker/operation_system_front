@@ -1,6 +1,6 @@
 // ── Enums ──────────────────────────────────────────────────────────────────
 
-export type UserRole = 'admin' | 'manager' | 'operator';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'operator';
 
 export type DocumentSource = 'email' | 'upload';
 
@@ -178,6 +178,25 @@ export interface User {
   is_active: boolean;
   onboarding_complete?: boolean;
   created_at: string;
+}
+
+export interface UserOutWithOrg {
+  id: string;
+  email: string;
+  org_id: string;
+  org_name: string;
+  org_slug: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OrgOutWithStats {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+  user_count: number;
 }
 
 export interface TokenResponse {
