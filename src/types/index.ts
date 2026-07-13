@@ -164,6 +164,7 @@ export interface OrgSettings {
   doc_organization_by: 'shipment' | 'client' | 'lane' | 'date';
   auto_fix_threshold: number;
   email_critical_alerts: boolean;
+  ocr_languages?: string;
   created_at: string;
   updated_at: string;
 }
@@ -247,6 +248,7 @@ export interface MailboxConnection {
   email_address: string;
   last_synced_at: string | null;
   is_active: boolean;
+  email_keywords?: string[] | null;
   created_at: string;
 }
 

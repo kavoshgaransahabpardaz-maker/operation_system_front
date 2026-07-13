@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type { MailboxConnection } from '@/types';
 
+
 export const emailsApi = {
   createImap: (data: {
     email_address: string;
@@ -18,4 +19,7 @@ export const emailsApi = {
 
   disconnect: (connectionId: string) =>
     apiClient.delete(`/api/v1/email/connections/${connectionId}`),
+
+  updateKeywords: (connectionId: string, keywords: string[] | null) =>
+    apiClient.patch<MailboxConnection>(`/api/v1/email/connections/${connectionId}/keywords`, { keywords }),
 };

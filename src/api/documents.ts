@@ -10,6 +10,14 @@ export const documentsApi = {
     });
   },
 
+  uploadBatch: (files: File[]) => {
+    const fd = new FormData();
+    files.forEach((f) => fd.append('files', f));
+    return apiClient.post<Document[]>('/api/v1/documents/upload/batch', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
   list: (shipmentId?: string) =>
     apiClient.get<DocumentListItem[]>('/api/v1/documents/', {
       params: shipmentId ? { shipment_id: shipmentId } : {},

@@ -15,7 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { useUpload } from '@/hooks/useUpload';
-import { ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from '@/lib/constants';
+import { ACCEPTED_FILE_TYPES, ACCEPTED_FILE_LABEL, MAX_BATCH_FILES } from '@/lib/constants';
 
 interface StatCardProps {
   label: string;
@@ -73,7 +73,7 @@ export function DashboardPage() {
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
-    await upload(files[0]);
+    await upload(files);
   }
 
   const needsReview     = data?.shipments_requiring_review ?? 0;
@@ -247,15 +247,15 @@ export function DashboardPage() {
                       <Upload className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium">Drop your file here</p>
+                      <p className="text-sm font-medium">Drop files here</p>
                       <p className="text-xs text-muted-foreground">
-                        PDF or image — max {MAX_FILE_BYTES / 1024 / 1024} MB
+                        {ACCEPTED_FILE_LABEL} — up to {MAX_BATCH_FILES} files, 1 GB each
                       </p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                      {uploading ? 'Uploading…' : 'Choose file'}
+                      {uploading ? 'Uploading…' : 'Choose files'}
                     </Button>
-                    <input ref={fileRef} type="file" accept={ACCEPTED_FILE_TYPES} className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+                    <input ref={fileRef} type="file" accept={ACCEPTED_FILE_TYPES} multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
                   </div>
                 </DialogContent>
               </Dialog>

@@ -19,7 +19,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUpload } from '@/hooks/useUpload';
 import { formatBytes, formatRelative, shortId, cn } from '@/lib/utils';
-import { ACCEPTED_FILE_TYPES, DOC_TYPE_LABELS, MAX_FILE_BYTES } from '@/lib/constants';
+import { ACCEPTED_FILE_TYPES, ACCEPTED_FILE_LABEL, DOC_TYPE_LABELS, MAX_BATCH_FILES } from '@/lib/constants';
 import type { DocumentStatus } from '@/types';
 
 const STATUS_FILTERS: { label: string; value: DocumentStatus | 'all' }[] = [
@@ -37,7 +37,7 @@ export function DocumentListPage({ shipmentId }: { shipmentId?: string } = {}) {
   const [dragOver, setDragOver] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; filename: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const { upload, uploading } = useUpload(() => setUploadOpen(false));
+  const { upload, uploading, uploadProgress } = useUpload(() => setUploadOpen(false));
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => documentsApi.delete(id),
@@ -60,7 +60,7 @@ export function DocumentListPage({ shipmentId }: { shipmentId?: string } = {}) {
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
-    await upload(files[0]);
+    await upload(files);
   }
 
   return (
@@ -93,20 +93,26 @@ export function DocumentListPage({ shipmentId }: { shipmentId?: string } = {}) {
                 <CloudUpload className="h-7 w-7 text-muted-foreground" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold">Drop file here or click to browse</p>
+                <p className="text-sm font-semibold">Drop files here or click to browse</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  PDF or image — max {MAX_FILE_BYTES / 1024 / 1024} MB
+                  {ACCEPTED_FILE_LABEL} — up to {MAX_BATCH_FILES} files, 1 GB each
                 </p>
               </div>
               {uploading && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Spinner size="sm" /> Uploading…
+                <div className="flex flex-col items-center gap-1.5 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Spinner size="sm" />
+                    {uploadProgress.total > 1
+                      ? `Uploading ${uploadProgress.total} files…`
+                      : 'Uploading…'}
+                  </div>
                 </div>
               )}
               <input
                 ref={fileRef}
                 type="file"
                 accept={ACCEPTED_FILE_TYPES}
+                multiple
                 className="hidden"
                 onChange={(e) => handleFiles(e.target.files)}
               />

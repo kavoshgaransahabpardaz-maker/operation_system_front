@@ -11,5 +11,6 @@ export const orgSettingsApi = {
     | 'doc_organization_by'
     | 'auto_fix_threshold'
     | 'email_critical_alerts'
+    | 'ocr_languages'
   >>) => apiClient.patch<OrgSettings>('/api/v1/org/settings', data),
 };

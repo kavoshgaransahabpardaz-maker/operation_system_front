@@ -142,9 +142,24 @@ export const FIELD_STATUS_COLORS: Record<FieldStatus, string> = {
   corrected: 'bg-purple-100 text-purple-700',
 };
 
-export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+export const MAX_FILE_BYTES = 1024 * 1024 * 1024; // 1 GB
 
-export const ACCEPTED_FILE_TYPES = 'application/pdf,image/*';
+export const MAX_BATCH_FILES = 15;
+
+export const ACCEPTED_FILE_TYPES = [
+  'application/pdf',
+  'image/*',
+  '.doc', '.docx',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xls', '.xlsx',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.csv', 'text/csv',
+  '.xml', 'application/xml', 'text/xml',
+].join(',');
+
+export const ACCEPTED_FILE_LABEL = 'PDF, Word, Excel, CSV, XML, or image';
 
 // ── Trade Intelligence ─────────────────────────────────────────────────────
 
