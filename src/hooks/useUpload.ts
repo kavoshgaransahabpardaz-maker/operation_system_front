@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { documentsApi } from '@/api';
-import { queryKeys } from '@/lib/queryKeys';
 import { MAX_FILE_BYTES, MAX_BATCH_FILES } from '@/lib/constants';
 import type { Document } from '@/types';
 import type { AxiosError } from 'axios';
