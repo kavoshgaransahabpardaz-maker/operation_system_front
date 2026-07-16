@@ -153,9 +153,30 @@ export interface FieldMismatch {
   values: MismatchValue[];
 }
 
+export interface ProductMismatchValue {
+  document_id: string;
+  product_id: string;
+  product_name: string | null;
+  value: string;
+}
+
+export interface ProductFieldMismatch {
+  field_name: string;
+  display_label: string;
+  severity: 'error' | 'warning';
+  values: ProductMismatchValue[];
+}
+
+export interface ProductGroupMismatch {
+  product_key: string;
+  hs_code: string | null;
+  field_mismatches: ProductFieldMismatch[];
+}
+
 export interface ShipmentMismatchOut {
   shipment_id: string;
   mismatches: FieldMismatch[];
+  product_mismatches: ProductGroupMismatch[];
 }
 
 // ── Flags & mismatches ─────────────────────────────────────────────────────
