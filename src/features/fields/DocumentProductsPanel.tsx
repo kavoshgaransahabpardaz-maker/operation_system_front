@@ -6,6 +6,7 @@ import { Spinner } from '@/components/shared/Spinner';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import { isoFlag } from './fieldFormatting';
 
 interface Props {
   documentId: string;
@@ -68,7 +69,13 @@ export function DocumentProductsPanel({ documentId }: Props) {
             <TableCell className="text-sm">
               {p.origin_country || p.destination_country ? (
                 <span>
-                  {p.origin_country ?? '?'} → {p.destination_country ?? '?'}
+                  {p.origin_country
+                    ? `${isoFlag(p.origin_country)} ${p.origin_country}`
+                    : '?'}
+                  {' → '}
+                  {p.destination_country
+                    ? `${isoFlag(p.destination_country)} ${p.destination_country}`
+                    : '?'}
                 </span>
               ) : (
                 <span className="text-muted-foreground">—</span>

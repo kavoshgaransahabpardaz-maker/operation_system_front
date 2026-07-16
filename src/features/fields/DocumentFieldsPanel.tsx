@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import { FIELD_NAME_LABELS, ZERO_TOLERANCE_FIELDS } from '@/lib/constants';
 import { CorrectFieldDialog } from './CorrectFieldDialog';
+import { FieldValueCell } from './fieldFormatting';
 import type { ExtractedField, FieldName } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -104,14 +105,7 @@ export function DocumentFieldsPanel({ documentId, documentStatus, bare = false }
                       </span>
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      {f.corrected_value ? (
-                        <span>
-                          <span className="line-through text-muted-foreground mr-2">{f.value_normalized ?? f.value_raw}</span>
-                          {f.corrected_value}
-                        </span>
-                      ) : (
-                        f.value_normalized ?? f.value_raw
-                      )}
+                      <FieldValueCell field={f} />
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {f.page_number ?? '—'}

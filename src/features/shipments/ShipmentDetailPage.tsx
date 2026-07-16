@@ -297,7 +297,9 @@ export function ShipmentDetailPage() {
   );
 
   const needsTypePicker = (doc: DocumentSummary) =>
-    doc.status === 'needs_review' || doc.doc_type === null;
+    doc.doc_type === null ||
+    doc.status === 'needs_review' ||
+    (doc.doc_type_confidence != null && doc.doc_type_confidence < 0.70);
 
   return (
     <div className="space-y-6">

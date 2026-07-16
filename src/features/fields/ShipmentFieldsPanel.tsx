@@ -11,6 +11,7 @@ import { FieldStatusBadge } from '@/components/shared/FieldStatusBadge';
 import { Button } from '@/components/ui/button';
 import { FIELD_NAME_LABELS, ZERO_TOLERANCE_FIELDS } from '@/lib/constants';
 import { CorrectFieldDialog } from './CorrectFieldDialog';
+import { FieldValueCell } from './fieldFormatting';
 import type { ExtractedField, FieldName } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -170,16 +171,7 @@ export function ShipmentFieldsPanel({ shipmentId }: Props) {
                             Document {f.document_id.slice(0, 8)}
                           </Link>
                           <p className="font-mono text-sm">
-                            {f.corrected_value ? (
-                              <>
-                                <span className="line-through text-muted-foreground mr-2">
-                                  {f.value_normalized ?? f.value_raw}
-                                </span>
-                                {f.corrected_value}
-                              </>
-                            ) : (
-                              f.value_normalized ?? f.value_raw
-                            )}
+                            <FieldValueCell field={f} />
                           </p>
                         </div>
                         <ConfidenceBadge confidence={f.confidence} compact />

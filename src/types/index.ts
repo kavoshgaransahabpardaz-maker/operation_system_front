@@ -90,7 +90,8 @@ export type FieldName =
   | 'expiry_date'
   | 'reference'
   | 'local_reference'
-  | 'point_of_entry';
+  | 'point_of_entry'
+  | 'port_of_discharge';
 
 export type FieldStatus = 'extracted' | 'confirmed' | 'corrected';
 

@@ -199,16 +199,43 @@ export function MismatchBanner({ data, documents }: Props) {
         )}
       </div>
 
-      <div className="space-y-2 p-4">
-        {[...fieldErrors, ...fieldWarnings].map((m) => (
-          <MismatchRow key={m.field_name} mismatch={m} documents={documents} />
-        ))}
-        {productGroups.map((g) => (
-          <ProductGroupRow key={g.product_key} group={g} documents={documents} />
-        ))}
-        {unmatchedProducts.map((p) => (
-          <UnmatchedProductRow key={p.product_id} product={p} documents={documents} />
-        ))}
+      <div className="space-y-4 p-4">
+        {(fieldErrors.length > 0 || fieldWarnings.length > 0) && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Document Conflicts
+            </p>
+            <div className="space-y-2">
+              {[...fieldErrors, ...fieldWarnings].map((m) => (
+                <MismatchRow key={m.field_name} mismatch={m} documents={documents} />
+              ))}
+            </div>
+          </div>
+        )}
+        {productGroups.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Product Conflicts
+            </p>
+            <div className="space-y-2">
+              {productGroups.map((g) => (
+                <ProductGroupRow key={g.product_key} group={g} documents={documents} />
+              ))}
+            </div>
+          </div>
+        )}
+        {unmatchedProducts.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Missing Products
+            </p>
+            <div className="space-y-2">
+              {unmatchedProducts.map((p) => (
+                <UnmatchedProductRow key={p.product_id} product={p} documents={documents} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
