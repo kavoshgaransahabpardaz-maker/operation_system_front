@@ -72,7 +72,7 @@ export function ShipmentProductsPanel({ shipmentId, documents }: Props) {
                         className="flex items-center gap-1.5 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <FileIcon contentType={doc.content_type} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <FileIcon contentType={doc.content_type ?? ''} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="max-w-[160px] truncate text-xs">{doc.filename}</span>
                       </Link>
                     ) : (

@@ -213,7 +213,7 @@ function ShipmentUploadZone({ shipmentId }: { shipmentId: string }) {
         <input
           ref={fileRef}
           type="file"
-          accept={ACCEPTED_FILE_TYPES.join(',')}
+          accept={(ACCEPTED_FILE_TYPES as string[]).join(',')}
           multiple
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
@@ -433,7 +433,7 @@ export function ShipmentDetailPage() {
                         className="flex items-center gap-2 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <FileIcon contentType={doc.content_type} className="text-muted-foreground" />
+                        <FileIcon contentType={doc.content_type ?? ''} className="text-muted-foreground" />
                         <span className="max-w-[200px] truncate">{doc.filename}</span>
                       </Link>
                     </TableCell>

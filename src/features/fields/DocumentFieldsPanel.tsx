@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { FIELD_NAME_LABELS, ZERO_TOLERANCE_FIELDS } from '@/lib/constants';
 import { CorrectFieldDialog } from './CorrectFieldDialog';
-import type { ExtractedField } from '@/types';
+import type { ExtractedField, FieldName } from '@/types';
 import type { AxiosError } from 'axios';
 
 interface Props {
@@ -92,8 +92,8 @@ export function DocumentFieldsPanel({ documentId, documentStatus, bare = false }
                   <TableRow key={f.id}>
                     <TableCell className="text-sm font-medium">
                       <span className="flex items-center gap-1">
-                        {FIELD_NAME_LABELS[f.field_name] ?? f.field_name}
-                        {ZERO_TOLERANCE_FIELDS.has(f.field_name) && (
+                        {FIELD_NAME_LABELS[f.field_name as FieldName] ?? f.field_name}
+                        {ZERO_TOLERANCE_FIELDS.has(f.field_name as FieldName) && (
                           <span
                             className="text-red-500 text-xs"
                             title="Zero-tolerance field — any mismatch is critical"
