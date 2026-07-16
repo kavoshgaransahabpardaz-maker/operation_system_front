@@ -26,7 +26,7 @@ const ROLES: {
     tab: 'Broker',
     tagline: 'Your rules. Your pace. Your call.',
     promise:
-      "Pre-declaration to declaration in 8 minutes, not an afternoon. The prep gets done while you make your coffee. More entries through the same hands — routine ones on autopilot, tricky ones with you in the driver's seat.",
+      "Pre-declaration to declaration in seconds, not an afternoon. The prep gets done while you make your coffee. More entries through the same hands — routine ones on autopilot, tricky ones with you in the driver's seat.",
     features: [
       'Documents in, auto-sorted by shipment — mismatch caught at the door',
       'Your rules, your rounding: set the tolerances, the AI acts only inside them',
@@ -88,7 +88,7 @@ const RESULTS = [
   {
     value: '~90%',
     label: 'Faster',
-    desc: 'A 2-hour manual declaration becomes an 8–15 minute workflow.',
+    desc: 'A 2-hour manual declaration becomes a workflow measured in seconds.',
     caveat: 'Target — based on workflow design',
   },
   {
@@ -415,9 +415,9 @@ function BrokerMockup() {
   );
 }
 
-// ── Importer mockup: Step 5 — Record & valuation ───────────────────────────────
+// ── Coming-soon placeholder (Importer + Exporter) ─────────────────────────────
 
-function ImporterMockup() {
+function ComingSoonMockup({ role, features }: { role: string; features: string[] }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-xl">
       <div className="flex" style={{ height: 420 }}>
@@ -430,146 +430,17 @@ function ImporterMockup() {
               <p className="text-xs font-bold text-gray-900">Shipments</p>
               <p className="text-[10px] text-gray-400">AI task orchestration across your pipeline</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[9px] text-green-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                AI orchestrator online
-              </span>
-            </div>
-          </div>
-
-          {/* Shipment tabs */}
-          <div className="flex items-center gap-1 border-b border-gray-200 bg-white px-4 py-1.5">
-            <div className="flex items-center gap-1 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 px-3 py-1.5">
-              <span className="text-[9px] font-semibold text-gray-700">SH-2026-83411</span>
-              <span className="text-[9px] text-gray-400">Steel mounting brackets · £75,000</span>
-            </div>
-            <div className="ml-auto">
-              <button className="flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1 text-[9px] font-medium text-gray-600">
-                Clearance workflow <ChevronDown className="h-2.5 w-2.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="border-b border-gray-100 bg-white px-4 py-1.5">
-            <p className="text-[9px] font-medium uppercase tracking-widest text-gray-400">
-              Step 5 of 6 · Steel mounting brackets · 12,500 pcs · Gdańsk → Harwich · Kowalski Metalworks
-            </p>
-          </div>
-
-          <div className="flex flex-1 overflow-hidden">
-            <StepRail active={5} />
-
-            <div className="flex flex-1 overflow-hidden">
-              {/* Center */}
-              <div className="flex-1 overflow-auto p-3 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-gray-900">Record & valuation</p>
-                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-700">
-                      Verify before filing
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[9px] text-gray-400">
-                    <span>4 of 6 done</span>
-                    <span className="rounded border border-gray-200 px-1.5 py-0.5 font-medium text-gray-600">@ Assign</span>
-                  </div>
-                </div>
-                <p className="text-[9px] text-gray-400">Verify classification and entry · customs value · duty exposure</p>
-
-                {/* Broker's entry verification */}
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-                    Your broker's entry — before filing
-                  </p>
-                  {[
-                    { field: 'HS code', brokerVal: '7318.15', verified: true, note: 'Cited — Explanatory Note 7318.15(b)' },
-                    { field: 'Origin', brokerVal: 'Poland (PL)', verified: true, note: 'TCA preference claimed — qualifies' },
-                    { field: 'Customs value', brokerVal: '£74,200 CIF', verified: false, note: '⚠ Invoice shows £75,000 — £800 unexplained' },
-                    { field: 'Incoterm', brokerVal: 'CIF Harwich', verified: true, note: 'Matches B/L and insurance certificate' },
-                  ].map(({ field, brokerVal, verified, note }) => (
-                    <div key={field} className="mb-1 flex items-center justify-between rounded-lg border border-gray-100 bg-white px-2.5 py-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white ${verified ? 'bg-green-500' : 'bg-orange-400'}`}>
-                          {verified ? '✓' : '!'}
-                        </span>
-                        <div>
-                          <p className="text-[9px] text-gray-500">{field}</p>
-                          <p className="text-[10px] font-semibold text-gray-900">{brokerVal}</p>
-                        </div>
-                      </div>
-                      <p className={`text-[9px] ${verified ? 'text-gray-400' : 'text-orange-600 font-medium'}`}>{note}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Preference claim */}
-                <div className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2">
-                  <p className="text-[9px] font-semibold text-teal-700">Preference saving on screen</p>
-                  <p className="text-[9px] text-gray-600 mt-0.5">TCA preference: £0 duty · MFN fallback: £5,926 · You save: <span className="font-bold text-green-700">£5,926</span></p>
-                </div>
-              </div>
-
-              {/* Right panel: audit trail */}
-              <div className="w-36 shrink-0 overflow-auto border-l border-gray-200 bg-white p-3 space-y-2">
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400">Audit trail</p>
-                {[
-                  { who: 'AI engine', action: 'HS code verified — Explanatory Note cited', t: '14:02', ok: true },
-                  { who: 'AI engine', action: 'TCA origin qualifies — EUR.1 on file', t: '14:02', ok: true },
-                  { who: 'System', action: 'Value discrepancy flagged — broker notified', t: '14:03', ok: false },
-                  { who: 'Sofia Reyes', action: 'Opened record for verification', t: '14:08', ok: null },
-                ].map(({ who, action, t, ok }) => (
-                  <div key={t + who} className="border-l-2 pl-2 py-0.5" style={{ borderColor: ok === true ? '#16a34a' : ok === false ? '#ea580c' : '#9ca3af' }}>
-                    <p className="text-[8px] font-semibold text-gray-700">{who}</p>
-                    <p className="text-[8px] text-gray-500 leading-snug">{action}</p>
-                    <p className="text-[7px] text-gray-300 mt-0.5">{t}</p>
-                  </div>
-                ))}
-                <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-2">
-                  <p className="text-[9px] font-semibold text-green-700">Good faith proof</p>
-                  <p className="text-[8px] text-gray-500 mt-0.5">All checks logged with source citations — audit-ready</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2">
-            <p className="text-[9px] text-gray-500">Sofia Reyes · Compliance Manager</p>
-            <div className="flex gap-2">
-              <button className="rounded border border-gray-200 px-2.5 py-1 text-[9px] font-medium text-gray-500">← Previous</button>
-              <button className="rounded bg-slate-900 px-3 py-1 text-[9px] font-semibold text-white">Next · Origin & filing →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Exporter mockup: Step 6 — Origin & filing ──────────────────────────────────
-
-function ExporterMockup() {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-xl">
-      <div className="flex" style={{ height: 420 }}>
-        <MockupSidebar />
-
-        <div className="flex flex-1 flex-col bg-gray-50 overflow-hidden">
-          <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5">
-            <div>
-              <p className="text-xs font-bold text-gray-900">Shipments</p>
-              <p className="text-[10px] text-gray-400">AI task orchestration across your pipeline</p>
-            </div>
             <span className="flex items-center gap-1 text-[9px] text-green-600">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
               AI orchestrator online
             </span>
           </div>
 
-          <div className="flex items-center gap-1 border-b border-gray-200 bg-white px-4 py-1.5">
+          {/* Greyed shipment tab */}
+          <div className="flex items-center gap-1 border-b border-gray-200 bg-white px-4 py-1.5 opacity-40">
             <div className="flex items-center gap-1 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 px-3 py-1.5">
-              <span className="text-[9px] font-semibold text-gray-700">SH-2026-91045</span>
-              <span className="text-[9px] text-gray-400">Stainless steel billets · 8t · GB→DE</span>
+              <span className="text-[9px] font-semibold text-gray-700">SH-2026-——</span>
+              <span className="text-[9px] text-gray-400">{role} workflow</span>
             </div>
             <div className="ml-auto">
               <button className="flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1 text-[9px] font-medium text-gray-600">
@@ -578,118 +449,45 @@ function ExporterMockup() {
             </div>
           </div>
 
-          <div className="border-b border-gray-100 bg-white px-4 py-1.5">
-            <p className="text-[9px] font-medium uppercase tracking-widest text-gray-400">
-              Step 6 of 6 · Stainless steel billets · 8 T · Sheffield → Hamburg · Meridian Exports Ltd
-            </p>
-          </div>
-
-          <div className="flex flex-1 overflow-hidden">
-            {/* Step rail — all done except active step 6 */}
-            <div className="w-36 shrink-0 border-r border-gray-100 bg-gray-50 px-2.5 py-3 space-y-0.5">
-              {CLEARANCE_STEPS.map(({ n, label }) => {
-                const isActive = n === 6;
-                const isDone = n < 6;
-                return (
-                  <div
-                    key={n}
-                    className={`flex items-center gap-1.5 rounded px-2 py-1.5 text-[10px] font-medium ${
-                      isActive ? 'bg-slate-900 text-white' : isDone ? 'text-green-700' : 'text-gray-400'
-                    }`}
-                  >
-                    {isDone ? <Check className="h-2.5 w-2.5 shrink-0" /> : <ChevronRight className="h-2.5 w-2.5 shrink-0" />}
-                    {n} · {label}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-1 overflow-hidden">
-              {/* Center */}
-              <div className="flex-1 overflow-auto p-3 space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-gray-900">Origin & filing</p>
-                  <span className="rounded bg-teal-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-teal-700">
-                    Sign-off required
-                  </span>
-                </div>
-                <p className="text-[9px] text-gray-400">BoM assessment · export controls · Proof of Origin — awaiting your sign-off</p>
-
-                {/* BoM result */}
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-                    Bill of materials — origin assessment
-                  </p>
-                  <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-[9px] font-bold text-white">✓</span>
-                      <p className="text-[10px] font-semibold text-green-800">Qualifies for TCA preferential origin</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1 text-[9px]">
-                      <div><p className="text-gray-400">Rule applied</p><p className="font-semibold text-gray-800">TCA ORIG.19</p></div>
-                      <div><p className="text-gray-400">Method</p><p className="font-semibold text-gray-800">Melt & pour (MTC verified)</p></div>
-                      <div><p className="text-gray-400">Evidence</p><p className="font-semibold text-gray-800">Mill-Test-Certificate</p></div>
-                      <div><p className="text-gray-400">Non-originating content</p><p className="font-semibold text-gray-800">12.4% &lt; 50% threshold</p></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Export controls */}
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-                    Export controls + sanctions
-                  </p>
-                  {[
-                    { label: 'UK Strategic Export Control List', result: 'Not listed — no licence required', ok: true },
-                    { label: 'EU dual-use Annex I', result: 'Not listed', ok: true },
-                    { label: 'Parties screening (UK/EU/US sanctions)', result: 'Meridian Exports · Bremer Stahlwerk — all clear', ok: true },
-                  ].map(({ label, result }) => (
-                    <div key={label} className="mb-1 flex items-start gap-2">
-                      <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-green-500 text-[8px] font-bold text-white">✓</span>
-                      <div>
-                        <p className="text-[9px] text-gray-500">{label}</p>
-                        <p className="text-[10px] font-semibold text-green-800">{result}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right: Statement of Origin */}
-              <div className="w-40 shrink-0 overflow-auto border-l border-gray-200 bg-white p-3 space-y-2">
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400">Statement of Origin</p>
-                <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5 space-y-1.5">
-                  <p className="text-[9px] font-semibold text-orange-800">Your sign-off required</p>
-                  <p className="text-[8px] text-gray-600 leading-snug">
-                    The origin evidence package is ready. As the exporter, you must explicitly approve this Statement of Origin — this is never automatic.
-                  </p>
-                  <button className="w-full rounded bg-slate-900 py-1.5 text-[9px] font-semibold text-white">
-                    Review & approve →
-                  </button>
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-[8px] font-semibold text-gray-500">Evidence package includes:</p>
-                  {['Mill-Test-Certificate (melt & pour)', 'BoM with non-originating content calc', 'Supplier declaration from steel mill', 'TCA ORIG.19 working shown'].map((item) => (
-                    <div key={item} className="flex items-start gap-1">
-                      <Check className="mt-0.5 h-2.5 w-2.5 shrink-0 text-green-500" />
-                      <p className="text-[8px] text-gray-500">{item}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="rounded-lg border border-teal-200 bg-teal-50 p-2">
-                  <p className="text-[9px] font-semibold text-teal-700">Duty saving confirmed</p>
-                  <p className="text-[9px] font-bold text-green-700">£8,640 vs MFN</p>
-                  <p className="text-[8px] text-gray-500">12% × £72,000 CIF</p>
-                </div>
+          {/* Coming soon overlay */}
+          <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+            {/* Blurred background hint */}
+            <div className="absolute inset-0 flex opacity-10 pointer-events-none select-none" aria-hidden>
+              <StepRail active={4} />
+              <div className="flex-1 p-3 space-y-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-10 rounded-lg bg-gray-300" style={{ opacity: 1 - i * 0.15 }} />
+                ))}
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2">
-            <p className="text-[9px] text-gray-500">James Meridian · Director, Meridian Exports Ltd</p>
-            <div className="flex gap-2">
-              <button className="rounded border border-gray-200 px-2.5 py-1 text-[9px] font-medium text-gray-500">← Previous</button>
-              <button className="rounded bg-teal-600 px-3 py-1 text-[9px] font-semibold text-white">Approve & issue Statement →</button>
+            {/* Coming soon card */}
+            <div className="relative z-10 mx-auto max-w-xs rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-lg">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50">
+                <span className="text-2xl">🔜</span>
+              </div>
+              <p className="text-sm font-bold text-gray-900">{role} workspace</p>
+              <p className="mt-1 text-xs text-gray-500">Coming soon</p>
+              <p className="mt-3 text-[11px] text-gray-400 leading-relaxed">
+                The {role.toLowerCase()} view is in active development. The features listed here are already
+                built into the engine — the role-specific UI is on its way.
+              </p>
+              <div className="mt-5 space-y-1.5 text-left">
+                {features.slice(0, 3).map((f) => (
+                  <div key={f} className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-teal-100">
+                      <Check className="h-2 w-2 text-teal-600" />
+                    </span>
+                    <span className="text-[10px] text-gray-600">{f}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                to="/register"
+                className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-teal-600 px-4 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-teal-500"
+              >
+                Get early access
+              </Link>
             </div>
           </div>
         </div>
@@ -700,9 +498,10 @@ function ExporterMockup() {
 
 const ROLE_MOCKUPS: Record<Role, React.ReactNode> = {
   broker: <BrokerMockup />,
-  importer: <ImporterMockup />,
-  exporter: <ExporterMockup />,
+  importer: <ComingSoonMockup role="Importer" features={ROLES.find((r) => r.id === 'importer')!.features} />,
+  exporter: <ComingSoonMockup role="Exporter" features={ROLES.find((r) => r.id === 'exporter')!.features} />,
 };
+
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
