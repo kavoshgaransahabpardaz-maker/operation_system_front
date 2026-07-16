@@ -14,6 +14,13 @@ export const fieldsApi = {
   correct: (fieldId: string, corrected_value: string) =>
     apiClient.post<ExtractedField>(`/api/v1/fields/${fieldId}/correct`, { corrected_value }),
 
+  confirmAll: (shipmentId: string, documentId?: string) =>
+    apiClient.post<{ confirmed: number }>(
+      `/api/v1/shipments/${shipmentId}/fields/confirm-all`,
+      {},
+      { params: documentId ? { document_id: documentId } : {} },
+    ),
+
   getProductsForDocument: (documentId: string) =>
     apiClient.get<DocumentProduct[]>(`/api/v1/documents/${documentId}/products`),
 

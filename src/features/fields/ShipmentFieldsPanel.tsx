@@ -19,14 +19,14 @@ interface Props {
 }
 
 interface FieldGroup {
-  fieldName: FieldName;
+  fieldName: string;
   fields: ExtractedField[];
   minConfidence: number;
   allReviewed: boolean;
 }
 
 function groupFields(fields: ExtractedField[]): FieldGroup[] {
-  const map = new Map<FieldName, ExtractedField[]>();
+  const map = new Map<string, ExtractedField[]>();
   for (const f of fields) {
     const arr = map.get(f.field_name) ?? [];
     arr.push(f);
@@ -42,7 +42,7 @@ function groupFields(fields: ExtractedField[]): FieldGroup[] {
 
 export function ShipmentFieldsPanel({ shipmentId }: Props) {
   const queryClient = useQueryClient();
-  const [expanded, setExpanded] = useState<Set<FieldName>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [correcting, setCorrecting] = useState<ExtractedField | null>(null);
 
   const { data: fields, isLoading } = useQuery({
@@ -61,7 +61,7 @@ export function ShipmentFieldsPanel({ shipmentId }: Props) {
     },
   });
 
-  const toggleExpand = (name: FieldName) => {
+  const toggleExpand = (name: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
@@ -104,8 +104,8 @@ export function ShipmentFieldsPanel({ shipmentId }: Props) {
                 <div className="flex items-center gap-3 px-4 py-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 text-sm font-medium">
-                      {FIELD_NAME_LABELS[group.fieldName]}
-                      {ZERO_TOLERANCE_FIELDS.has(group.fieldName) && (
+                      {FIELD_NAME_LABELS[group.fieldName as FieldName] ?? group.fieldName}
+                      {ZERO_TOLERANCE_FIELDS.has(group.fieldName as FieldName) && (
                         <span
                           className="text-red-500 text-xs"
                           title="Zero-tolerance field"

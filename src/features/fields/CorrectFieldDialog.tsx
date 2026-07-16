@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { FIELD_NAME_LABELS } from '@/lib/constants';
-import type { ExtractedField } from '@/types';
+import type { ExtractedField, FieldName } from '@/types';
 import type { AxiosError } from 'axios';
 
 interface Props {
@@ -46,7 +46,7 @@ export function CorrectFieldDialog({ field, onClose, invalidateKey }: Props) {
           <div className="space-y-4">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Field</Label>
-              <p className="text-sm font-medium">{FIELD_NAME_LABELS[field.field_name]}</p>
+              <p className="text-sm font-medium">{FIELD_NAME_LABELS[field.field_name as FieldName] ?? field.field_name}</p>
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Original value</Label>

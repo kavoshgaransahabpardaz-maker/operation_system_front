@@ -17,9 +17,12 @@ export type DocumentStatus =
 export type DocumentType =
   | 'commercial_invoice'
   | 'packing_list'
+  | 'bill_of_material'
   | 'bill_of_lading'
-  | 'air_waybill'
   | 'certificate_of_origin'
+  | 'phytosanitary_certificate'
+  | 'product_specification'
+  | 'air_waybill'
   | 'insurance_certificate'
   | 'customs_declaration'
   | 'purchase_order'
@@ -27,7 +30,6 @@ export type DocumentType =
   | 'mill_certificate'
   | 'suppliers_declaration'
   | 'cmr'
-  | 'phytosanitary_certificate'
   | 'other';
 
 export type EmailProvider = 'gmail' | 'microsoft365' | 'outlook' | 'imap';
@@ -99,7 +101,7 @@ export interface ExtractedField {
   document_id: string;
   shipment_id: string | null;
   org_id: string | null;
-  field_name: FieldName;
+  field_name: string;
   value_raw: string;
   value_normalized: string | null;
   field_type: FieldType | null;
@@ -333,12 +335,15 @@ export interface Shipment {
 export interface DocumentSummary {
   id: string;
   filename: string;
-  content_type: string;
-  source: DocumentSource;
   status: DocumentStatus;
   doc_type: DocumentType | null;
-  confidence: number | null;
-  created_at: string;
+  doc_type_confidence: number | null;
+  is_manual_override: boolean | null;
+  field_count: number;
+  confirmed_field_count: number;
+  product_count: number;
+  /** content_type used for file icon rendering — may be absent on newer API responses */
+  content_type?: string;
 }
 
 export interface ShipmentDetail {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ship, Trash2 } from 'lucide-react';
+import { Ship, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { shipmentsApi, flagsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -10,6 +10,8 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ReferenceChip } from '@/components/shared/ReferenceChip';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -19,6 +21,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatRelative, shortId } from '@/lib/utils';
 import type { Shipment, ShipmentStatus } from '@/types';
+import type { AxiosError } from 'axios';
 
 const STATUS_FILTERS: { label: string; value: ShipmentStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -47,11 +50,79 @@ function OpenFlagCount({ shipment }: { shipment: Shipment }) {
   );
 }
 
+function CreateShipmentDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: () => shipmentsApi.create(invoiceNumber.trim()),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipments });
+      toast.success('Shipment created');
+      onOpenChange(false);
+      setInvoiceNumber('');
+      setError(null);
+      navigate(`/shipments/${res.data.id}`);
+    },
+    onError: (e: AxiosError<{ detail?: string }>) => {
+      if (e.response?.status === 409) {
+        setError('A shipment with this invoice number already exists.');
+      } else {
+        setError(e.response?.data?.detail ?? 'Could not create shipment.');
+      }
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!invoiceNumber.trim()) { setError('Invoice number is required.'); return; }
+    mutation.mutate();
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(v) => { if (!v) { setInvoiceNumber(''); setError(null); } onOpenChange(v); }}
+    >
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>New Shipment</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="invoice-number">Invoice Number</Label>
+            <Input
+              id="invoice-number"
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.target.value)}
+              placeholder="INV-2026-001"
+              autoFocus
+            />
+            {error && <p className="text-xs text-destructive">{error}</p>}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Creating…' : 'Create Shipment'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ShipmentListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<ShipmentStatus | 'all'>('all');
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => shipmentsApi.delete(id),
@@ -74,7 +145,14 @@ export function ShipmentListPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Shipments</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Shipments</h1>
+        <Button onClick={() => setCreateOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" /> New Shipment
+        </Button>
+      </div>
+
+      <CreateShipmentDialog open={createOpen} onOpenChange={setCreateOpen} />
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as ShipmentStatus | 'all')}>
         <TabsList>
@@ -92,7 +170,12 @@ export function ShipmentListPage() {
         <EmptyState
           icon={Ship}
           title="No shipments yet"
-          description="Upload documents to start matching."
+          description="Create a shipment to start uploading documents."
+          action={
+            <Button onClick={() => setCreateOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" /> New Shipment
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-xl border bg-background">

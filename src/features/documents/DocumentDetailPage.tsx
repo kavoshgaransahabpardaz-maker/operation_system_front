@@ -143,6 +143,15 @@ export function DocumentDetailPage() {
     },
   });
 
+  const confirmAllMutation = useMutation({
+    mutationFn: () => fieldsApi.confirmAll(doc!.shipment_id!, id!),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.documentFields(id!) });
+      toast.success(`${res.data.confirmed} field${res.data.confirmed !== 1 ? 's' : ''} confirmed`);
+    },
+    onError: () => toast.error('Could not confirm fields.'),
+  });
+
   if (docLoading || classLoading) return <Spinner size="lg" className="mt-20" />;
   if (!doc) return <p className="mt-20 text-center text-muted-foreground">Document not found.</p>;
 
@@ -356,6 +365,27 @@ export function DocumentDetailPage() {
             </TabsList>
           </div>
           <TabsContent value="fields" className="m-0">
+            {fields && fields.length > 0 && (
+              <div className="flex items-center justify-between border-b px-4 py-2">
+                <p className="text-xs text-muted-foreground">
+                  {(() => {
+                    const confirmed = fields.filter((f) => f.status === 'confirmed' || f.status === 'corrected').length;
+                    return `${confirmed} / ${fields.length} fields confirmed`;
+                  })()}
+                </p>
+                {doc.shipment_id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    disabled={confirmAllMutation.isPending || fields.every((f) => f.status === 'confirmed' || f.status === 'corrected')}
+                    onClick={() => confirmAllMutation.mutate()}
+                  >
+                    {confirmAllMutation.isPending ? 'Confirming…' : 'Confirm All'}
+                  </Button>
+                )}
+              </div>
+            )}
             <DocumentFieldsPanel documentId={id!} documentStatus={doc.status} bare />
           </TabsContent>
           <TabsContent value="products" className="m-0">

@@ -6,9 +6,12 @@ import type {
 export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   commercial_invoice: 'Commercial Invoice',
   packing_list: 'Packing List',
+  bill_of_material: 'Bill of Material',
   bill_of_lading: 'Bill of Lading',
-  air_waybill: 'Air Waybill',
   certificate_of_origin: 'Certificate of Origin',
+  phytosanitary_certificate: 'Phytosanitary Certificate',
+  product_specification: 'Product Specification',
+  air_waybill: 'Airway Bill',
   insurance_certificate: 'Insurance Certificate',
   customs_declaration: 'Customs Declaration',
   purchase_order: 'Purchase Order',
@@ -16,7 +19,6 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   mill_certificate: 'Mill Certificate',
   suppliers_declaration: "Supplier's Declaration",
   cmr: 'CMR Consignment Note',
-  phytosanitary_certificate: 'Phytosanitary Certificate',
   other: 'Other',
 };
 

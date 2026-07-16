@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload, Tag, Edit, Link as LinkIcon, ArrowLeftRight, Plus, RefreshCw, Mail,
-  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper, Trash2, Files,
+  Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings,
+  Newspaper, Trash2, Files, CloudUpload,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { workspaceApi, shipmentsApi, flagsApi, intelApi, fieldsApi } from '@/api';
+import { cn } from '@/lib/utils';
+import { workspaceApi, shipmentsApi, flagsApi, intelApi, fieldsApi, classificationsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
@@ -24,14 +26,20 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { formatRelative, shortId } from '@/lib/utils';
-import { DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS, FIELD_NAME_LABELS } from '@/lib/constants';
+import {
+  DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS, FIELD_NAME_LABELS,
+  ACCEPTED_FILE_TYPES, ACCEPTED_FILE_LABEL, MAX_BATCH_FILES,
+} from '@/lib/constants';
 import { FlagListPanel } from '@/features/flags/FlagListPanel';
 import { ShipmentFieldsPanel } from '@/features/fields/ShipmentFieldsPanel';
 import { ShipmentProductsPanel } from '@/features/fields/ShipmentProductsPanel';
 import { MismatchBanner } from '@/features/fields/MismatchBanner';
 import { IntelArticleCard } from '@/features/intel/components/IntelArticleCard';
-import type { ShipmentStatus, ActivityAction } from '@/types';
+import { useUpload } from '@/hooks/useUpload';
+import type { ShipmentStatus, ActivityAction, DocumentType, DocumentSummary } from '@/types';
 import type { AxiosError } from 'axios';
+
+const PROCESSING_STATUSES = new Set(['uploaded', 'ocr_pending', 'ocr_processing']);
 
 const ACTION_META: Record<ActivityAction, { icon: typeof Upload; label: (d: Record<string, unknown>) => string }> = {
   document_uploaded: { icon: Upload, label: () => 'Document uploaded' },
@@ -75,6 +83,146 @@ const ACTION_META: Record<ActivityAction, { icon: typeof Upload; label: (d: Reco
   settings_updated: { icon: Settings, label: () => 'Org settings updated' },
 };
 
+const DOC_TYPE_PICKER_ORDER: DocumentType[] = [
+  'commercial_invoice',
+  'packing_list',
+  'bill_of_lading',
+  'certificate_of_origin',
+  'bill_of_material',
+  'product_specification',
+  'customs_declaration',
+  'other',
+];
+
+function TypePickerRow({
+  doc,
+  shipmentId,
+}: {
+  doc: DocumentSummary;
+  shipmentId: string;
+}) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const overrideMutation = useMutation({
+    mutationFn: (docType: DocumentType) => classificationsApi.override(doc.id, docType),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentDetail(shipmentId) });
+      toast.success('Document type set');
+      setOpen(false);
+    },
+    onError: () => toast.error('Could not update document type.'),
+  });
+
+  return (
+    <>
+      <TableRow
+        className="bg-amber-50/50"
+        key={`picker-${doc.id}`}
+      >
+        <TableCell colSpan={5} className="py-2 px-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-amber-700 font-medium mr-1">Select type for {doc.filename}:</span>
+            {DOC_TYPE_PICKER_ORDER.map((dt) => (
+              <Button
+                key={dt}
+                size="sm"
+                variant={doc.doc_type === dt ? 'default' : 'outline'}
+                className="h-7 text-xs"
+                disabled={overrideMutation.isPending}
+                onClick={() => overrideMutation.mutate(dt)}
+              >
+                {DOC_TYPE_LABELS[dt]}
+              </Button>
+            ))}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={() => setOpen(true)}
+            >
+              More…
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Select document type</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            {(Object.keys(DOC_TYPE_LABELS) as DocumentType[]).map((dt) => (
+              <Button
+                key={dt}
+                variant={doc.doc_type === dt ? 'default' : 'outline'}
+                className="h-auto py-2 text-xs"
+                disabled={overrideMutation.isPending}
+                onClick={() => overrideMutation.mutate(dt)}
+              >
+                {DOC_TYPE_LABELS[dt]}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ShipmentUploadZone({ shipmentId }: { shipmentId: string }) {
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { upload, uploading, uploadProgress } = useUpload(undefined, { shipmentId });
+
+  async function handleFiles(files: FileList | null) {
+    if (!files?.length) return;
+    await upload(files);
+  }
+
+  return (
+    <div className="rounded-xl border bg-background p-4">
+      <h2 className="mb-3 font-semibold">Add Documents</h2>
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-colors cursor-pointer',
+          dragOver
+            ? 'border-primary bg-primary/5'
+            : 'border-muted-foreground/20 hover:border-muted-foreground/40',
+        )}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+        onClick={() => fileRef.current?.click()}
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+          <CloudUpload className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold">Drop files here or click to browse</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {ACCEPTED_FILE_LABEL} — up to {MAX_BATCH_FILES} files, 1 GB each
+          </p>
+        </div>
+        {uploading && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner size="sm" />
+            {uploadProgress.total > 1 ? `Uploading ${uploadProgress.total} files…` : 'Uploading…'}
+          </div>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept={ACCEPTED_FILE_TYPES.join(',')}
+          multiple
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ShipmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -86,6 +234,10 @@ export function ShipmentDetailPage() {
   const { data: detail, isLoading } = useQuery({
     queryKey: queryKeys.shipmentDetail(id!),
     queryFn: () => workspaceApi.shipmentDetail(id!).then((r) => r.data),
+    refetchInterval: (query) => {
+      const docs = query.state.data?.documents ?? [];
+      return docs.some((d) => PROCESSING_STATUSES.has(d.status)) ? 5_000 : false;
+    },
   });
 
   const { data: activity } = useQuery({
@@ -103,9 +255,12 @@ export function ShipmentDetailPage() {
     queryFn: () => intelApi.shipmentIntel(id!).then((r) => r.data),
   });
 
+  const docCount = detail?.documents.length ?? 0;
+
   const { data: mismatches } = useQuery({
     queryKey: queryKeys.shipmentMismatches(id!),
     queryFn: () => fieldsApi.getMismatches(id!).then((r) => r.data),
+    enabled: docCount >= 2,
   });
 
   const deleteMutation = useMutation({
@@ -140,6 +295,9 @@ export function ShipmentDetailPage() {
   const sanctionFlags = openFlags.filter(
     (f) => f.severity === 'critical' && f.flag_type === 'mismatch' && f.title.toLowerCase().includes('sanction'),
   );
+
+  const needsTypePicker = (doc: DocumentSummary) =>
+    doc.status === 'needs_review' || doc.doc_type === null;
 
   return (
     <div className="space-y-6">
@@ -202,7 +360,7 @@ export function ShipmentDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sanctions banner — shown before the general flags banner */}
+      {/* Sanctions banner */}
       {sanctionFlags.length > 0 && (
         <div className="flex items-start gap-3 rounded-lg border-2 border-red-500 bg-red-50 p-4">
           <AlertTriangle className="mt-0.5 h-5 w-5 text-red-600 shrink-0" />
@@ -230,10 +388,7 @@ export function ShipmentDetailPage() {
           <p className="text-sm text-red-800 font-medium">
             {openFlags.length} open issue{openFlags.length !== 1 ? 's' : ''} — review required
           </p>
-          <a
-            href="#flags-panel"
-            className="ml-auto text-sm text-red-700 underline hover:no-underline"
-          >
+          <a href="#flags-panel" className="ml-auto text-sm text-red-700 underline hover:no-underline">
             Review
           </a>
         </div>
@@ -257,53 +412,76 @@ export function ShipmentDetailPage() {
               <TableHead>File</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Confidence</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>Type Confidence</TableHead>
+              <TableHead>Fields</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {detail.documents.map((doc) => (
-              <TableRow key={doc.id}>
-                <TableCell>
-                  <Link
-                    to={`/documents/${doc.id}`}
-                    className="flex items-center gap-2 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FileIcon contentType={doc.content_type} className="text-muted-foreground" />
-                    <span className="max-w-[200px] truncate">{doc.filename}</span>
-                  </Link>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {doc.doc_type ? DOC_TYPE_LABELS[doc.doc_type] : '—'}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={doc.status} />
-                </TableCell>
-                <TableCell>
-                  {doc.confidence != null ? (
-                    <ConfidenceBadge confidence={doc.confidence} />
-                  ) : (
-                    '—'
-                  )}
-                </TableCell>
-                <TableCell>
-                  <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-xs capitalize">
-                    {doc.source}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatRelative(doc.created_at)}
+            {detail.documents.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                  No documents yet — upload below.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              detail.documents.flatMap((doc) => {
+                const rows = [
+                  <TableRow key={doc.id}>
+                    <TableCell>
+                      <Link
+                        to={`/documents/${doc.id}`}
+                        className="flex items-center gap-2 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FileIcon contentType={doc.content_type} className="text-muted-foreground" />
+                        <span className="max-w-[200px] truncate">{doc.filename}</span>
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {doc.doc_type ? DOC_TYPE_LABELS[doc.doc_type] : (
+                        <span className="text-amber-600 text-xs font-medium">Unset</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={doc.status} />
+                    </TableCell>
+                    <TableCell>
+                      {doc.doc_type_confidence != null ? (
+                        <ConfidenceBadge confidence={doc.doc_type_confidence} />
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm tabular-nums">
+                      {doc.field_count > 0 ? (
+                        <span>
+                          <span className={doc.confirmed_field_count === doc.field_count ? 'text-green-600 font-medium' : ''}>
+                            {doc.confirmed_field_count}
+                          </span>
+                          <span className="text-muted-foreground">/{doc.field_count}</span>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>,
+                ];
+
+                if (needsTypePicker(doc)) {
+                  rows.push(
+                    <TypePickerRow key={`picker-${doc.id}`} doc={doc} shipmentId={id!} />,
+                  );
+                }
+
+                return rows;
+              })
+            )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Cross-document mismatch banner */}
-      {mismatches && mismatches.mismatches.length > 0 && (
+      {/* Cross-document mismatch banner — only when ≥ 2 docs */}
+      {docCount >= 2 && mismatches && mismatches.mismatches.length > 0 && (
         <MismatchBanner data={mismatches} documents={detail.documents} />
       )}
 
@@ -316,7 +494,10 @@ export function ShipmentDetailPage() {
       {/* Extracted fields panel */}
       <ShipmentFieldsPanel shipmentId={id!} />
 
-      {/* Shipment Intel panel — always shown */}
+      {/* Upload zone */}
+      <ShipmentUploadZone shipmentId={id!} />
+
+      {/* Shipment Intel panel */}
       <div className="rounded-xl border bg-background">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
