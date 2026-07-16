@@ -6,7 +6,7 @@ import {
   Scan, CheckCircle, PenLine, AlertTriangle, CheckCheck, GitCompare, Settings, Newspaper, Trash2, Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { workspaceApi, shipmentsApi, flagsApi, intelApi } from '@/api';
+import { workspaceApi, shipmentsApi, flagsApi, intelApi, fieldsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
@@ -27,6 +27,8 @@ import { formatRelative, shortId } from '@/lib/utils';
 import { DOC_TYPE_LABELS, SHIPMENT_STATUS_LABELS, FIELD_NAME_LABELS } from '@/lib/constants';
 import { FlagListPanel } from '@/features/flags/FlagListPanel';
 import { ShipmentFieldsPanel } from '@/features/fields/ShipmentFieldsPanel';
+import { ShipmentProductsPanel } from '@/features/fields/ShipmentProductsPanel';
+import { MismatchBanner } from '@/features/fields/MismatchBanner';
 import { IntelArticleCard } from '@/features/intel/components/IntelArticleCard';
 import type { ShipmentStatus, ActivityAction } from '@/types';
 import type { AxiosError } from 'axios';
@@ -99,6 +101,11 @@ export function ShipmentDetailPage() {
   const { data: intelItems } = useQuery({
     queryKey: queryKeys.shipmentIntel(id!),
     queryFn: () => intelApi.shipmentIntel(id!).then((r) => r.data),
+  });
+
+  const { data: mismatches } = useQuery({
+    queryKey: queryKeys.shipmentMismatches(id!),
+    queryFn: () => fieldsApi.getMismatches(id!).then((r) => r.data),
   });
 
   const deleteMutation = useMutation({
@@ -294,6 +301,14 @@ export function ShipmentDetailPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Cross-document mismatch banner */}
+      {mismatches && mismatches.mismatches.length > 0 && (
+        <MismatchBanner data={mismatches} documents={detail.documents} />
+      )}
+
+      {/* Products across all documents */}
+      <ShipmentProductsPanel shipmentId={id!} documents={detail.documents} />
 
       {/* Flags panel */}
       <FlagListPanel shipmentId={id!} />

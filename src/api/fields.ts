@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { ExtractedField } from '@/types';
+import type { DocumentProduct, ExtractedField, ShipmentMismatchOut } from '@/types';
 
 export const fieldsApi = {
   listByShipment: (shipmentId: string) =>
@@ -13,4 +13,13 @@ export const fieldsApi = {
 
   correct: (fieldId: string, corrected_value: string) =>
     apiClient.post<ExtractedField>(`/api/v1/fields/${fieldId}/correct`, { corrected_value }),
+
+  getProductsForDocument: (documentId: string) =>
+    apiClient.get<DocumentProduct[]>(`/api/v1/documents/${documentId}/products`),
+
+  getProductsForShipment: (shipmentId: string) =>
+    apiClient.get<DocumentProduct[]>(`/api/v1/shipments/${shipmentId}/products`),
+
+  getMismatches: (shipmentId: string) =>
+    apiClient.get<ShipmentMismatchOut>(`/api/v1/shipments/${shipmentId}/field-mismatches`),
 };

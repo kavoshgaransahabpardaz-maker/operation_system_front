@@ -57,22 +57,38 @@ export type ActivityAction =
 
 export type FieldName =
   | 'party_shipper'
+  | 'vat_number_seller'
+  | 'rex_number_seller'
   | 'party_consignee'
+  | 'vat_number_buyer'
+  | 'rex_number_buyer'
+  | 'eori_number'
   | 'invoice_value'
+  | 'vat_value'
+  | 'freight_value'
+  | 'insurance_value'
   | 'currency'
   | 'gross_weight'
   | 'net_weight'
   | 'quantity'
+  | 'total_packages'
   | 'hs_code'
+  | 'commodity_description'
+  | 'lot_number'
+  | 'product_registration_number'
+  | 'product_serial_number'
   | 'stated_origin'
+  | 'destination_country'
+  | 'place_of_loading'
   | 'incoterm'
+  | 'preferential_duty'
   | 'invoice_date'
+  | 'due_date'
   | 'shipment_date'
+  | 'expiry_date'
   | 'reference'
   | 'local_reference'
-  | 'destination_country'
-  | 'point_of_entry'
-  | 'commodity_description';
+  | 'point_of_entry';
 
 export type FieldStatus = 'extracted' | 'confirmed' | 'corrected';
 
@@ -82,11 +98,11 @@ export interface ExtractedField {
   id: string;
   document_id: string;
   shipment_id: string | null;
-  org_id: string;
+  org_id: string | null;
   field_name: FieldName;
   value_raw: string;
   value_normalized: string | null;
-  field_type: FieldType;
+  field_type: FieldType | null;
   confidence: number;
   page_number: number | null;
   status: FieldStatus;
@@ -96,6 +112,48 @@ export interface ExtractedField {
   corrected_by: string | null;
   corrected_at: string | null;
   created_at: string;
+}
+
+// ── Document Products ──────────────────────────────────────────────────────
+
+export interface DocumentProduct {
+  id: string;
+  document_id: string;
+  shipment_id: string | null;
+  org_id: string;
+  product_name: string | null;
+  material: string | null;
+  intended_use: string | null;
+  description: string | null;
+  quantity: string | null;
+  unit_price: string | null;
+  currency: string | null;
+  origin_country: string | null;
+  destination_country: string | null;
+  existing_hs_code: string | null;
+  missing_required_fields: string[] | null;
+  is_ready_to_classify: boolean;
+  created_at: string;
+}
+
+// ── Cross-document mismatches ──────────────────────────────────────────────
+
+export interface MismatchValue {
+  document_id: string;
+  value_raw: string;
+  value_normalized: string | null;
+  confidence: number;
+}
+
+export interface FieldMismatch {
+  field_name: FieldName;
+  severity: 'error' | 'warning';
+  values: MismatchValue[];
+}
+
+export interface ShipmentMismatchOut {
+  shipment_id: string;
+  mismatches: FieldMismatch[];
 }
 
 // ── Flags & mismatches ─────────────────────────────────────────────────────

@@ -80,28 +80,44 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const FIELD_NAME_LABELS: Record<FieldName, string> = {
-  party_shipper: 'Shipper',
-  party_consignee: 'Consignee',
+  party_shipper: 'Seller / Consignor',
+  vat_number_seller: 'Seller VAT / EIK',
+  rex_number_seller: 'Seller REX Number',
+  party_consignee: 'Buyer / Consignee',
+  vat_number_buyer: 'Buyer VAT Number',
+  rex_number_buyer: 'Buyer REX Number',
+  eori_number: 'EORI Number',
   invoice_value: 'Invoice Value',
+  vat_value: 'VAT Amount',
+  freight_value: 'Freight Value',
+  insurance_value: 'Insurance Value',
   currency: 'Currency',
   gross_weight: 'Gross Weight',
   net_weight: 'Net Weight',
   quantity: 'Quantity',
-  hs_code: 'HS Code',
+  total_packages: 'Total Packages',
+  hs_code: 'HS / Commodity Code',
+  commodity_description: 'Product Description',
+  lot_number: 'Lot Number',
+  product_registration_number: 'Product Reg. No.',
+  product_serial_number: 'Serial Number',
   stated_origin: 'Country of Origin',
-  incoterm: 'Incoterm',
-  invoice_date: 'Invoice Date',
-  shipment_date: 'Shipment Date',
-  reference: 'Reference Number',
-  local_reference: 'Local Reference',
   destination_country: 'Destination Country',
+  place_of_loading: 'Place of Loading',
+  incoterm: 'Incoterm',
+  preferential_duty: 'Preferential Duty',
+  invoice_date: 'Invoice Date',
+  due_date: 'Payment Due Date',
+  shipment_date: 'Shipment Date',
+  expiry_date: 'Expiry Date',
+  reference: 'Reference / Invoice No.',
+  local_reference: 'Local Reference',
   point_of_entry: 'Point of Entry',
-  commodity_description: 'Commodity Description',
 };
 
-// Zero-tolerance fields — any mismatch is always critical
+// Zero-tolerance (error severity) fields per §4.5 — any mismatch is always an error
 export const ZERO_TOLERANCE_FIELDS = new Set<FieldName>([
-  'hs_code', 'stated_origin', 'currency', 'incoterm',
+  'gross_weight', 'net_weight', 'currency', 'hs_code', 'invoice_value', 'stated_origin',
 ]);
 
 export const FLAG_TYPE_LABELS: Record<FlagType, string> = {

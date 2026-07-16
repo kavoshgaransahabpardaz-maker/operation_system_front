@@ -7,11 +7,14 @@ export const queryKeys = {
   classification: (docId: string) => ['classification', docId] as const,
   duplicates: (docId: string) => ['duplicates', docId] as const,
   documentFields: (docId: string) => ['documentFields', docId] as const,
+  documentProducts: (docId: string) => ['documentProducts', docId] as const,
 
   shipments: ['shipments'] as const,
   shipment: (id: string) => ['shipment', id] as const,
   shipmentDetail: (id: string) => ['shipmentDetail', id] as const,
   shipmentFields: (id: string) => ['shipmentFields', id] as const,
+  shipmentProducts: (id: string) => ['shipmentProducts', id] as const,
+  shipmentMismatches: (id: string) => ['shipmentMismatches', id] as const,
   shipmentFlags: (id: string, status?: string) => ['shipmentFlags', id, status] as const,
   activityLog: (id: string) => ['activityLog', id] as const,
 

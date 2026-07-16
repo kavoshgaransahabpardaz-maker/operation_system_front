@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, AlertTriangle, Trash2 } from 'lucide-react';
@@ -17,9 +17,11 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { formatBytes, formatDate, shortId } from '@/lib/utils';
 import { DOC_TYPE_LABELS } from '@/lib/constants';
 import { DocumentFieldsPanel } from '@/features/fields/DocumentFieldsPanel';
+import { DocumentProductsPanel } from '@/features/fields/DocumentProductsPanel';
 import type { DocumentType } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -40,7 +42,7 @@ export function DocumentDetailPage() {
     queryKey: queryKeys.document(id!),
     queryFn: () => documentsApi.get(id!).then((r) => r.data),
     refetchInterval: (query) =>
-      query.state.data?.status && PROCESSING_STATUSES.has(query.state.data.status) ? 10_000 : false,
+      query.state.data?.status && PROCESSING_STATUSES.has(query.state.data.status) ? 3_000 : false,
   });
 
   const { data: classification, isLoading: classLoading } = useQuery({
@@ -68,6 +70,42 @@ export function DocumentDetailPage() {
   });
 
   const hasLowConfidenceFields = fields?.some((f) => f.confidence < 0.7) ?? false;
+
+  // Toast when document auto-links to a shipment
+  const prevShipmentIdRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!doc) return;
+    const prev = prevShipmentIdRef.current;
+    if (prev !== undefined && prev === null && doc.shipment_id && doc.status === 'matched') {
+      toast.success(
+        <span>
+          Grouped into Shipment —{' '}
+          <Link
+            to={`/workspace/shipments/${doc.shipment_id}`}
+            className="underline"
+            onClick={() => toast.dismiss()}
+          >
+            view shipment
+          </Link>
+        </span>,
+        { duration: 8000 },
+      );
+    }
+    prevShipmentIdRef.current = doc.shipment_id;
+  }, [doc?.shipment_id, doc?.status]);
+
+  // Toast on terminal processing outcomes (excluding matched which is handled above)
+  const prevStatusRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!doc) return;
+    const prev = prevStatusRef.current;
+    if (prev && PROCESSING_STATUSES.has(prev)) {
+      if (doc.status === 'classified') toast.success('Processing complete');
+      else if (doc.status === 'ocr_failed') toast.error('Could not read file — OCR failed');
+      else if (doc.status === 'needs_review') toast.warning('Low confidence classification — please review');
+    }
+    prevStatusRef.current = doc.status;
+  }, [doc?.status]);
 
   const overrideMutation = useMutation({
     mutationFn: (doc_type: DocumentType) => classificationsApi.override(id!, doc_type),
@@ -296,14 +334,35 @@ export function DocumentDetailPage() {
               <Spinner size="sm" />
               Processing…
             </div>
+          ) : doc.status === 'ocr_failed' ? (
+            <p className="text-sm text-destructive">OCR failed — could not read this file.</p>
           ) : (
             <p className="text-sm text-muted-foreground">Not yet classified.</p>
           )}
         </div>
       </div>
 
-      {/* Extracted fields */}
-      <DocumentFieldsPanel documentId={id!} documentStatus={doc.status} />
+      {/* Fields + Products tabs */}
+      <div className="rounded-xl border bg-background">
+        <Tabs defaultValue="fields">
+          <div className="border-b px-4 pt-3">
+            <TabsList className="h-8">
+              <TabsTrigger value="fields" className="text-xs">
+                Fields {fields ? `(${fields.length})` : ''}
+              </TabsTrigger>
+              <TabsTrigger value="products" className="text-xs">
+                Products
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="fields" className="m-0">
+            <DocumentFieldsPanel documentId={id!} documentStatus={doc.status} bare />
+          </TabsContent>
+          <TabsContent value="products" className="m-0">
+            <DocumentProductsPanel documentId={id!} />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Reassociate to shipment */}
       <div className="rounded-xl border bg-background p-6">
