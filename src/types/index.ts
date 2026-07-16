@@ -173,10 +173,22 @@ export interface ProductGroupMismatch {
   field_mismatches: ProductFieldMismatch[];
 }
 
+export interface UnmatchedProduct {
+  document_id: string;
+  product_id: string;
+  product_name: string | null;
+  hs_code: string | null;
+  quantity: string | null;
+  unit_price: string | null;
+  currency: string | null;
+  missing_in: string[];
+}
+
 export interface ShipmentMismatchOut {
   shipment_id: string;
   mismatches: FieldMismatch[];
   product_mismatches: ProductGroupMismatch[];
+  unmatched_products: UnmatchedProduct[];
 }
 
 // ── Flags & mismatches ─────────────────────────────────────────────────────
