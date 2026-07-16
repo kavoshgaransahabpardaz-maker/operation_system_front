@@ -213,7 +213,7 @@ function ShipmentUploadZone({ shipmentId }: { shipmentId: string }) {
         <input
           ref={fileRef}
           type="file"
-          accept={(ACCEPTED_FILE_TYPES as string[]).join(',')}
+          accept={ACCEPTED_FILE_TYPES}
           multiple
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
