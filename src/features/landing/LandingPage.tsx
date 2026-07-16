@@ -26,7 +26,7 @@ const ROLES: {
     tab: 'Broker',
     tagline: 'Your rules. Your pace. Your call.',
     promise:
-      'Pre-declaration to declaration in 8 minutes, not an afternoon. The prep gets done while you make your coffee. More entries through the same hands — routine ones on autopilot, tricky ones with you in the driver's seat.',
+      "Pre-declaration to declaration in 8 minutes, not an afternoon. The prep gets done while you make your coffee. More entries through the same hands — routine ones on autopilot, tricky ones with you in the driver's seat.",
     features: [
       'Documents in, auto-sorted by shipment — mismatch caught at the door',
       'Your rules, your rounding: set the tolerances, the AI acts only inside them',
@@ -45,8 +45,8 @@ const ROLES: {
     promise:
       'You carry the liability. Finally, you carry the tools. See the penalty before HMRC does. Walk into an audit ready before the letter hits your mailbox. Put your broker, forwarder and exporter on one page.',
     features: [
-      'Verify your broker's classification and entry before it's filed',
-      'Claim the preference you're owed — stop overpaying duty',
+      "Verify your broker's classification and entry before it's filed",
+      "Claim the preference you're owed — stop overpaying duty",
       'Landed cost and exposure, in plain view',
       'A bankable, audit-ready trail — proof you acted in good faith',
       'Connect broker, forwarder and exporter on one shared record',
@@ -1128,7 +1128,7 @@ export function LandingPage() {
               <ul className="mt-6 space-y-3">
                 {[
                   'Direct line to the founding team — your view shapes the build',
-                  'Founding partner pricing — the best rates we'll ever offer',
+                  "Founding partner pricing — the best rates we'll ever offer",
                   'Your logo on the wall + first access to TradeHub',
                   'Priority feature requests from day one',
                 ].map((item) => (
