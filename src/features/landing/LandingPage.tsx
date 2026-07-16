@@ -643,7 +643,7 @@ function ExporterMockup() {
                     { label: 'UK Strategic Export Control List', result: 'Not listed — no licence required', ok: true },
                     { label: 'EU dual-use Annex I', result: 'Not listed', ok: true },
                     { label: 'Parties screening (UK/EU/US sanctions)', result: 'Meridian Exports · Bremer Stahlwerk — all clear', ok: true },
-                  ].map(({ label, result, ok }) => (
+                  ].map(({ label, result }) => (
                     <div key={label} className="mb-1 flex items-start gap-2">
                       <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-green-500 text-[8px] font-bold text-white">✓</span>
                       <div>
