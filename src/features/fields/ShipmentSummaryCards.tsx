@@ -239,7 +239,6 @@ function SummaryCard({
 // ── Resolve side panel ───────────────────────────────────────────────────────
 
 function ResolveSidePanel({
-  fieldName,
   label,
   fields,
   mismatch,
@@ -247,7 +246,6 @@ function ResolveSidePanel({
   shipmentId,
   onClose,
 }: {
-  fieldName: string;
   label: string;
   fields: ExtractedField[];
   mismatch: FieldMismatch | undefined;
@@ -563,7 +561,6 @@ export function ShipmentSummaryCards({
       >
         {panelField && (
           <ResolveSidePanel
-            fieldName={panelField}
             label={panelLabel}
             fields={panelFields}
             mismatch={panelMismatch}
