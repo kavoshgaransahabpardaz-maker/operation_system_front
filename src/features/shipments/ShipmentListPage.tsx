@@ -1,69 +1,105 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ship, Trash2, Plus } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { shipmentsApi, flagsApi } from '@/api';
+import { shipmentsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
-import { EmptyState } from '@/components/shared/EmptyState';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ReferenceChip } from '@/components/shared/ReferenceChip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatRelative, shortId } from '@/lib/utils';
+import { SHIPMENT_STATUS_LABELS } from '@/lib/constants';
 import type { Shipment, ShipmentStatus } from '@/types';
 import type { AxiosError } from 'axios';
 
-const STATUS_FILTERS: { label: string; value: ShipmentStatus | 'all' }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'active' },
-  { label: 'Complete', value: 'complete' },
-  { label: 'On Hold', value: 'on_hold' },
-];
+const STATUS_BADGE: Record<ShipmentStatus, string> = {
+  active: 'bg-blue-100 text-blue-700',
+  complete: 'bg-green-100 text-green-700',
+  on_hold: 'bg-amber-100 text-amber-800',
+};
 
-function OpenFlagCount({ shipment }: { shipment: Shipment }) {
-  const { data: flags } = useQuery({
-    queryKey: queryKeys.shipmentFlags(shipment.id, 'open'),
-    queryFn: () => flagsApi.listByShipment(shipment.id, 'open').then((r) => r.data),
-  });
+const STATUS_BAR: Record<ShipmentStatus, { width: string; color: string }> = {
+  active: { width: 'w-3/5', color: 'bg-blue-500' },
+  on_hold: { width: 'w-1/4', color: 'bg-amber-500' },
+  complete: { width: 'w-full', color: 'bg-green-500' },
+};
 
-  const count = flags?.length ?? 0;
+function ShipmentCard({
+  shipment,
+  onDelete,
+}: {
+  shipment: Shipment;
+  onDelete: () => void;
+}) {
+  const navigate = useNavigate();
+  const bar = STATUS_BAR[shipment.status];
+  const primaryRef = shipment.references[0];
 
   return (
-    <span
-      className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium tabular-nums ${
-        count > 0 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'
-      }`}
-      title={count > 0 ? `${count} open issue${count !== 1 ? 's' : ''}` : 'No open issues'}
+    <div
+      className="group relative border border-border rounded-2xl p-5 flex flex-col gap-3 cursor-pointer bg-background hover:shadow-md transition-all"
+      onClick={() => navigate(`/shipments/${shipment.id}`)}
     >
-      {count}
-    </span>
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-mono text-sm font-bold tracking-tight">{shortId(shipment.id)}</span>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_BADGE[shipment.status]}`}
+        >
+          {SHIPMENT_STATUS_LABELS[shipment.status].toUpperCase()}
+        </span>
+      </div>
+
+      {primaryRef && (
+        <p className="text-[13px] font-semibold truncate">{primaryRef.ref_value}</p>
+      )}
+
+      <div className="flex flex-wrap gap-1.5">
+        {shipment.references.slice(primaryRef ? 1 : 0, 4).map((ref) => (
+          <ReferenceChip key={ref.id} ref_type={ref.ref_type} ref_value={ref.ref_value} />
+        ))}
+        {shipment.references.length > 4 && (
+          <span className="text-[11px] text-muted-foreground">
+            +{shipment.references.length - 4}
+          </span>
+        )}
+      </div>
+
+      <p className="text-[11px] text-muted-foreground mt-auto">{formatRelative(shipment.updated_at)}</p>
+
+      <div className="h-1 bg-muted rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${bar.width} ${bar.color}`} />
+      </div>
+
+      <button
+        type="button"
+        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        title="Delete shipment"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
   );
 }
 
-function CreateShipmentDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function AddShipmentCard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () => shipmentsApi.create(invoiceNumber.trim()),
+    mutationFn: (invoice: string) => shipmentsApi.create(invoice),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.shipments });
-      toast.success('Shipment created');
-      onOpenChange(false);
-      setInvoiceNumber('');
-      setError(null);
       navigate(`/shipments/${res.data.id}`);
     },
     onError: (e: AxiosError<{ detail?: string }>) => {
@@ -75,54 +111,58 @@ function CreateShipmentDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     },
   });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function submit() {
     setError(null);
-    if (!invoiceNumber.trim()) { setError('Invoice number is required.'); return; }
-    mutation.mutate();
+    const trimmed = value.trim();
+    if (!trimmed) { setError('Enter an invoice number.'); return; }
+    mutation.mutate(trimmed);
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => { if (!v) { setInvoiceNumber(''); setError(null); } onOpenChange(v); }}
-    >
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>New Shipment</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="invoice-number">Invoice Number</Label>
-            <Input
-              id="invoice-number"
-              value={invoiceNumber}
-              onChange={(e) => setInvoiceNumber(e.target.value)}
-              placeholder="INV-2026-001"
-              autoFocus
-            />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Creating…' : 'Create Shipment'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <div className="border-2 border-dashed border-border rounded-2xl p-5 flex flex-col gap-3 bg-muted/20">
+      <p className="text-sm font-bold">+ New shipment</p>
+      <Input
+        value={value}
+        onChange={(e) => { setValue(e.target.value); setError(null); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+        placeholder="Invoice number, e.g. INV-2026-001"
+        className="font-mono text-sm h-9"
+        autoComplete="off"
+      />
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <Button
+        size="sm"
+        className="w-full h-9"
+        onClick={submit}
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? 'Creating…' : 'Create shipment'}
+      </Button>
+      <p className="text-[11px] text-muted-foreground">Upload documents on the next screen.</p>
+    </div>
+  );
+}
+
+function StatPill({
+  label,
+  value,
+  colorCls,
+}: {
+  label: string;
+  value: number;
+  colorCls?: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className={`text-xl font-bold tabular-nums ${colorCls ?? ''}`}>{value}</span>
+      <span className="font-mono text-[10.5px] tracking-widest text-muted-foreground">{label}</span>
+    </div>
   );
 }
 
 export function ShipmentListPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<ShipmentStatus | 'all'>('all');
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => shipmentsApi.delete(id),
@@ -131,9 +171,7 @@ export function ShipmentListPage() {
       toast.success('Shipment deleted');
       setPendingDelete(null);
     },
-    onError: () => {
-      toast.error('Delete failed.');
-    },
+    onError: () => toast.error('Delete failed.'),
   });
 
   const { data: shipments, isLoading } = useQuery({
@@ -141,114 +179,65 @@ export function ShipmentListPage() {
     queryFn: () => shipmentsApi.list().then((r) => r.data),
   });
 
-  const filtered = shipments?.filter((s) => filter === 'all' || s.status === filter) ?? [];
+  const active = shipments?.filter((s) => s.status === 'active').length ?? 0;
+  const onHold = shipments?.filter((s) => s.status === 'on_hold').length ?? 0;
+  const complete = shipments?.filter((s) => s.status === 'complete').length ?? 0;
+
+  const now = new Date();
+  const month = now.toLocaleString('default', { month: 'long' }).toUpperCase();
+  const year = now.getFullYear();
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Shipments</h1>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> New Shipment
-        </Button>
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <p className="font-mono text-[10.5px] tracking-widest text-muted-foreground">
+            WORKSPACE · {month} {year}
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight mt-1.5">Shipments</h1>
+        </div>
+        {shipments && shipments.length > 0 && (
+          <div className="flex items-baseline gap-8">
+            <StatPill label="ACTIVE" value={active} colorCls="text-blue-600" />
+            <StatPill label="ON HOLD" value={onHold} colorCls="text-amber-600" />
+            <StatPill label="VERIFIED" value={complete} colorCls="text-green-600" />
+          </div>
+        )}
       </div>
-
-      <CreateShipmentDialog open={createOpen} onOpenChange={setCreateOpen} />
-
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as ShipmentStatus | 'all')}>
-        <TabsList>
-          {STATUS_FILTERS.map((f) => (
-            <TabsTrigger key={f.value} value={f.value}>
-              {f.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
 
       {isLoading ? (
         <Spinner size="lg" className="mt-20" />
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={Ship}
-          title="No shipments yet"
-          description="Create a shipment to start uploading documents."
-          action={
-            <Button onClick={() => setCreateOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" /> New Shipment
-            </Button>
-          }
-        />
       ) : (
-        <div className="rounded-xl border bg-background">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Shipment ID</TableHead>
-                <TableHead>References</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Open Flags</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((s) => (
-                <TableRow
-                  key={s.id}
-                  className="cursor-pointer"
-                  onClick={() => navigate(`/shipments/${s.id}`)}
-                >
-                  <TableCell className="font-mono text-sm">{shortId(s.id)}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {s.references.slice(0, 3).map((ref) => (
-                        <ReferenceChip key={ref.id} ref_type={ref.ref_type} ref_value={ref.ref_value} />
-                      ))}
-                      {s.references.length > 3 && (
-                        <span className="text-xs text-muted-foreground">+{s.references.length - 3}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={s.status} />
-                  </TableCell>
-                  <TableCell>
-                    <OpenFlagCount shipment={s} />
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatRelative(s.created_at)}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatRelative(s.updated_at)}
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => setPendingDelete(s.id)}
-                      title="Delete shipment"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-4">
+          <AddShipmentCard />
+          {shipments?.map((s) => (
+            <ShipmentCard
+              key={s.id}
+              shipment={s}
+              onDelete={() => setPendingDelete(s.id)}
+            />
+          ))}
         </div>
       )}
 
-      <Dialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) setPendingDelete(null); }}>
+      <Dialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete shipment?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This will delete shipment <strong>{pendingDelete ? shortId(pendingDelete) : ''}</strong>. All linked documents will be kept but unlinked. Flags, intel matches, and references will be removed. This cannot be undone.
+            This will delete shipment{' '}
+            <strong>{pendingDelete ? shortId(pendingDelete) : ''}</strong>. All linked
+            documents will be kept but unlinked. Flags, intel matches, and references will be
+            removed. This cannot be undone.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPendingDelete(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setPendingDelete(null)}>
+              Cancel
+            </Button>
             <Button
               variant="destructive"
               onClick={() => pendingDelete && deleteMutation.mutate(pendingDelete)}
