@@ -27,9 +27,8 @@ import {
   ACCEPTED_FILE_TYPES, ACCEPTED_FILE_LABEL, MAX_BATCH_FILES,
 } from '@/lib/constants';
 import { FlagListPanel } from '@/features/flags/FlagListPanel';
-import { ShipmentFieldTiles } from '@/features/fields/ShipmentFieldTiles';
+import { ShipmentSummaryCards } from '@/features/fields/ShipmentSummaryCards';
 import { ShipmentProductsPanel } from '@/features/fields/ShipmentProductsPanel';
-import { MismatchBanner } from '@/features/fields/MismatchBanner';
 import { IntelArticleCard } from '@/features/intel/components/IntelArticleCard';
 import { useUpload } from '@/hooks/useUpload';
 import type { ShipmentStatus, ActivityAction, DocumentType, DocumentSummary } from '@/types';
@@ -490,28 +489,24 @@ export function ShipmentDetailPage() {
         </p>
       </div>
 
-      {/* Mismatch banner */}
-      {docCount >= 2 && mismatches && (
-        <MismatchBanner data={mismatches} documents={detail.documents} />
-      )}
-
-      {/* Extracted data */}
+      {/* Extracted data — 3 summary cards with inline conflict highlights */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <p className="font-mono text-[10.5px] tracking-widest font-bold text-muted-foreground">
-            EXTRACTED DATA
-          </p>
-          <p className="text-[11px] text-muted-foreground">Click any field to review or correct</p>
-        </div>
-        <ShipmentFieldTiles
+        <p className="font-mono text-[10.5px] tracking-widest font-bold text-muted-foreground">
+          EXTRACTED DATA
+        </p>
+        <ShipmentSummaryCards
           shipmentId={id!}
           documents={detail.documents}
           mismatches={mismatches}
         />
       </div>
 
-      {/* Products */}
-      <ShipmentProductsPanel shipmentId={id!} documents={detail.documents} />
+      {/* Products — with inline mismatch highlights when ≥ 2 docs */}
+      <ShipmentProductsPanel
+        shipmentId={id!}
+        documents={detail.documents}
+        mismatches={docCount >= 2 ? mismatches : undefined}
+      />
 
       {/* Flags panel */}
       <div id="flags-panel">
