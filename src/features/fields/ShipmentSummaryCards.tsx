@@ -15,19 +15,13 @@ import type { ExtractedField, FieldMismatch, DocumentSummary, ShipmentMismatchOu
 const CARDS = [
   {
     id: 'origin',
-    label: 'ORIGIN & DESTINATION',
+    label: 'ORIGIN, DESTINATION & PARTIES',
     fields: [
       { name: 'stated_origin', label: 'Country of Origin' },
       { name: 'destination_country', label: 'Country of Destination' },
       { name: 'place_of_loading', label: 'Place of Loading' },
       { name: 'port_of_discharge', label: 'Port of Discharge' },
       { name: 'incoterm', label: 'Incoterm' },
-    ],
-  },
-  {
-    id: 'parties',
-    label: 'CONSIGNOR & CONSIGNEE',
-    fields: [
       { name: 'party_shipper', label: 'Consignor (Seller)' },
       { name: 'vat_number_seller', label: 'Seller VAT / EIK' },
       { name: 'eori_number', label: 'EORI Number' },
@@ -530,8 +524,8 @@ export function ShipmentSummaryCards({
         </div>
       )}
 
-      {/* 3 summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 2 summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {CARDS.map((card) => (
           <SummaryCard
             key={card.id}

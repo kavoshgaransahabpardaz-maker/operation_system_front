@@ -1,8 +1,7 @@
-import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Ship, FileInput, Tag, AlertCircle, Mail, Upload, ArrowRight, Clock, Paperclip,
+  Ship, FileInput, Tag, AlertCircle, Mail, ArrowRight, Clock, Paperclip,
   AlertTriangle, AlertOctagon, ScanSearch, Newspaper,
 } from 'lucide-react';
 import { workspaceApi } from '@/api';
@@ -11,11 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/shared/Spinner';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { formatRelative, cn } from '@/lib/utils';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from '@/components/ui/dialog';
-import { useUpload } from '@/hooks/useUpload';
-import { ACCEPTED_FILE_TYPES, ACCEPTED_FILE_LABEL, MAX_BATCH_FILES } from '@/lib/constants';
 
 interface StatCardProps {
   label: string;
@@ -64,17 +58,7 @@ export function DashboardPage() {
     refetchInterval: 30_000,
   });
   const navigate = useNavigate();
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const { upload, uploading } = useUpload(() => setUploadOpen(false));
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
-
   if (isLoading) return <Spinner size="lg" className="mt-20" />;
-
-  async function handleFiles(files: FileList | null) {
-    if (!files?.length) return;
-    await upload(files);
-  }
 
   const needsReview     = data?.shipments_requiring_review ?? 0;
   const criticalFlags   = data?.open_flags_critical ?? 0;
@@ -224,41 +208,9 @@ export function DashboardPage() {
           <div className="rounded-xl border bg-white shadow-sm p-5">
             <h3 className="mb-4 text-sm font-semibold">Quick Actions</h3>
             <div className="space-y-2">
-              <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full justify-start gap-2">
-                    <Upload className="h-4 w-4" /> Upload Document
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Upload Document</DialogTitle>
-                  </DialogHeader>
-                  <div
-                    className={cn(
-                      'flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-10 transition-colors',
-                      dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/20 hover:border-muted-foreground/40'
-                    )}
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-                      <Upload className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">Drop files here</p>
-                      <p className="text-xs text-muted-foreground">
-                        {ACCEPTED_FILE_LABEL} — up to {MAX_BATCH_FILES} files, 1 GB each
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                      {uploading ? 'Uploading…' : 'Choose files'}
-                    </Button>
-                    <input ref={fileRef} type="file" accept={ACCEPTED_FILE_TYPES} multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button className="w-full justify-start gap-2" onClick={() => navigate('/workspace')}>
+                <Ship className="h-4 w-4" /> Create New Shipment
+              </Button>
 
               <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/workspace')}>
                 <FileInput className="h-4 w-4" /> View Workspace

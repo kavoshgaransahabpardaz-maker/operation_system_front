@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { fieldsApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { Spinner } from '@/components/shared/Spinner';
@@ -25,6 +25,10 @@ function abbrev(filename: string, max = 18): string {
   return name.slice(0, max - ext.length - 1) + '…' + ext;
 }
 
+function dash(val: string | null | undefined) {
+  return val ?? <span className="text-muted-foreground/50">—</span>;
+}
+
 function HsCodeCell({
   product,
   productGroupKey,
@@ -44,10 +48,9 @@ function HsCodeCell({
       (fm) => fm.field_name === 'existing_hs_code',
     );
     if (hsMismatch && hsMismatch.values.some((v) => v.product_id === product.id)) {
-      const allValues = hsMismatch.values;
       return (
         <div className="flex flex-col gap-0.5">
-          {allValues.map((v) => (
+          {hsMismatch.values.map((v) => (
             <span
               key={v.document_id}
               className="inline-flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 font-mono text-[10.5px] text-red-800"
@@ -65,11 +68,12 @@ function HsCodeCell({
       {product.existing_hs_code}
     </span>
   ) : (
-    <span className="text-muted-foreground">—</span>
+    <span className="text-muted-foreground/50">—</span>
   );
 }
 
 export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Props) {
+
   const { data: products, isLoading } = useQuery({
     queryKey: queryKeys.shipmentProducts(shipmentId),
     queryFn: () => fieldsApi.getProductsForShipment(shipmentId).then((r) => r.data),
@@ -89,12 +93,10 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
   const canConflict = documents.length >= 2;
   const count = products?.length ?? 0;
 
-  // Build lookup: product_id → UnmatchedProduct
   const unmatchedMap = new Map(
     (mismatches?.unmatched_products ?? []).map((up) => [up.product_id, up]),
   );
 
-  // Build lookup: productKey → ProductGroupMismatch
   const productMismatchMap = new Map(
     (mismatches?.product_mismatches ?? []).map((pm) => [pm.product_key, pm]),
   );
@@ -133,13 +135,14 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Source</TableHead>
+                <TableHead className="w-[130px]">Source</TableHead>
                 <TableHead>Product</TableHead>
                 <TableHead>HS Code</TableHead>
-                <TableHead>Qty</TableHead>
+                <TableHead>Qty / Pcs</TableHead>
+                <TableHead>Net Wt.</TableHead>
+                <TableHead>Gross Wt.</TableHead>
                 <TableHead>Unit Price</TableHead>
                 <TableHead>Origin → Dest.</TableHead>
-                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,6 +153,7 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
 
                 return (
                   <TableRow key={p.id} className={rowCls}>
+                    {/* Source */}
                     <TableCell>
                       {doc ? (
                         <Link
@@ -161,7 +165,7 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                             contentType={doc.content_type ?? ''}
                             className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
                           />
-                          <span className="max-w-[140px] truncate text-xs">
+                          <span className="max-w-[110px] truncate text-xs">
                             {abbrev(doc.filename)}
                           </span>
                         </Link>
@@ -172,7 +176,8 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       )}
                     </TableCell>
 
-                    <TableCell className="max-w-[180px]">
+                    {/* Product + mismatch badge */}
+                    <TableCell className="max-w-[200px]">
                       <p className="truncate text-sm font-medium">
                         {p.product_name ?? p.description ?? '—'}
                       </p>
@@ -193,6 +198,7 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       )}
                     </TableCell>
 
+                    {/* HS Code with conflict chips */}
                     <TableCell>
                       <HsCodeCell
                         product={p}
@@ -202,15 +208,24 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       />
                     </TableCell>
 
-                    <TableCell className="text-sm">{p.quantity ?? '—'}</TableCell>
+                    {/* Qty / Pcs */}
+                    <TableCell className="text-sm">{dash(p.quantity)}</TableCell>
 
-                    <TableCell className="text-sm">
+                    {/* Net Weight */}
+                    <TableCell className="text-sm">{dash(p.net_weight)}</TableCell>
+
+                    {/* Gross Weight */}
+                    <TableCell className="text-sm">{dash(p.gross_weight)}</TableCell>
+
+                    {/* Unit Price */}
+                    <TableCell className="text-sm whitespace-nowrap">
                       {p.unit_price
                         ? `${p.unit_price}${p.currency ? ` ${p.currency}` : ''}`
-                        : '—'}
+                        : <span className="text-muted-foreground/50">—</span>}
                     </TableCell>
 
-                    <TableCell className="text-sm">
+                    {/* Origin → Dest. */}
+                    <TableCell className="text-sm whitespace-nowrap">
                       {p.origin_country || p.destination_country ? (
                         <span>
                           {p.origin_country
@@ -222,20 +237,7 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                             : '?'}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      {p.is_ready_to_classify ? (
-                        <span className="flex items-center gap-1 text-xs text-green-700">
-                          <CheckCircle className="h-3.5 w-3.5" /> Ready
-                        </span>
-                      ) : (
-                        <span className="flex items-start gap-1 text-xs text-amber-700">
-                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                          {(p.missing_required_fields ?? []).join(', ')}
-                        </span>
+                        <span className="text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
                   </TableRow>

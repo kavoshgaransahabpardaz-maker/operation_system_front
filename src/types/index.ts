@@ -129,6 +129,8 @@ export interface DocumentProduct {
   intended_use: string | null;
   description: string | null;
   quantity: string | null;
+  net_weight: string | null;
+  gross_weight: string | null;
   unit_price: string | null;
   currency: string | null;
   origin_country: string | null;
