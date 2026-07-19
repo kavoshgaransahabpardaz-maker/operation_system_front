@@ -38,9 +38,12 @@ export function DocumentProductsPanel({ documentId }: Props) {
         <TableRow>
           <TableHead>Product</TableHead>
           <TableHead>HS Code</TableHead>
-          <TableHead>Quantity</TableHead>
+          <TableHead>Qty</TableHead>
           <TableHead>Unit Price</TableHead>
-          <TableHead>Origin → Destination</TableHead>
+          <TableHead>Line Total</TableHead>
+          <TableHead>Weight (net/gross)</TableHead>
+          <TableHead>Lot / Expiry</TableHead>
+          <TableHead>Origin → Dest</TableHead>
           <TableHead>Ready?</TableHead>
         </TableRow>
       </TableHeader>
@@ -52,19 +55,50 @@ export function DocumentProductsPanel({ documentId }: Props) {
               {p.material && (
                 <p className="text-xs text-muted-foreground">{p.material}</p>
               )}
+              {p.ship_from && (
+                <p className="text-xs text-muted-foreground">From: {p.ship_from}</p>
+              )}
             </TableCell>
             <TableCell>
               {p.existing_hs_code ? (
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs dark:bg-slate-800">
                   {p.existing_hs_code}
                 </span>
               ) : (
                 <span className="text-muted-foreground">—</span>
               )}
+              {p.existing_national_code && (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {p.existing_national_code_jurisdiction
+                    ? `${p.existing_national_code_jurisdiction}: `
+                    : ''}
+                  {p.existing_national_code}
+                </p>
+              )}
             </TableCell>
             <TableCell className="text-sm">{p.quantity ?? '—'}</TableCell>
             <TableCell className="text-sm">
               {p.unit_price ? `${p.unit_price}${p.currency ? ` ${p.currency}` : ''}` : '—'}
+            </TableCell>
+            <TableCell className="text-sm">
+              {p.line_total ? `${p.line_total}${p.currency ? ` ${p.currency}` : ''}` : '—'}
+            </TableCell>
+            <TableCell className="text-sm text-nowrap">
+              {p.net_weight || p.gross_weight ? (
+                <span>{p.net_weight ?? '?'} / {p.gross_weight ?? '?'}</span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="text-sm">
+              {p.lot_number || p.expiry_date ? (
+                <span>
+                  {p.lot_number && <span className="block">Lot: {p.lot_number}</span>}
+                  {p.expiry_date && <span className="block text-muted-foreground">Exp: {p.expiry_date}</span>}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
             </TableCell>
             <TableCell className="text-sm">
               {p.origin_country || p.destination_country ? (

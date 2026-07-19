@@ -142,6 +142,8 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                 <TableHead>Net Wt.</TableHead>
                 <TableHead>Gross Wt.</TableHead>
                 <TableHead>Unit Price</TableHead>
+                <TableHead>Line Total</TableHead>
+                <TableHead>Lot / Expiry</TableHead>
                 <TableHead>Origin → Dest.</TableHead>
               </TableRow>
             </TableHeader>
@@ -222,6 +224,27 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       {p.unit_price
                         ? `${p.unit_price}${p.currency ? ` ${p.currency}` : ''}`
                         : <span className="text-muted-foreground/50">—</span>}
+                    </TableCell>
+
+                    {/* Line Total */}
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {p.line_total
+                        ? `${p.line_total}${p.currency ? ` ${p.currency}` : ''}`
+                        : <span className="text-muted-foreground/50">—</span>}
+                    </TableCell>
+
+                    {/* Lot / Expiry */}
+                    <TableCell className="text-sm">
+                      {p.lot_number || p.expiry_date ? (
+                        <span>
+                          {p.lot_number && <span className="block">{p.lot_number}</span>}
+                          {p.expiry_date && (
+                            <span className="block text-muted-foreground">{p.expiry_date}</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
                     </TableCell>
 
                     {/* Origin → Dest. */}
