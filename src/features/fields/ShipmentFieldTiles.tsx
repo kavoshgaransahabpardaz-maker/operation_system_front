@@ -29,8 +29,8 @@ const FIELD_CATEGORIES: { label: string; fields: string[] }[] = [
   {
     label: 'VALUES',
     fields: [
-      'invoice_value', 'currency', 'gross_weight', 'net_weight',
-      'invoice_date', 'vat_value', 'freight_value', 'insurance_value',
+      'invoice_value', 'currency', 'gross_weight', 'net_weight', 'weight_unit',
+      'invoice_date', 'vat_value', 'freight_value', 'insurance_value', 'fob_value',
     ],
   },
   {
@@ -38,6 +38,7 @@ const FIELD_CATEGORIES: { label: string; fields: string[] }[] = [
     fields: [
       'incoterm', 'stated_origin', 'destination_country', 'place_of_loading',
       'port_of_discharge', 'shipment_date', 'reference', 'local_reference',
+      'preferential_duty',
     ],
   },
 ];

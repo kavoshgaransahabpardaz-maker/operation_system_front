@@ -55,6 +55,9 @@ export function DocumentProductsPanel({ documentId }: Props) {
               {p.material && (
                 <p className="text-xs text-muted-foreground">{p.material}</p>
               )}
+              {p.intended_use && (
+                <p className="text-xs text-muted-foreground italic">{p.intended_use}</p>
+              )}
               {p.ship_from && (
                 <p className="text-xs text-muted-foreground">From: {p.ship_from}</p>
               )}

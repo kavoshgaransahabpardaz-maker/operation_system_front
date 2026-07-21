@@ -186,6 +186,9 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       {p.material && (
                         <p className="text-xs text-muted-foreground">{p.material}</p>
                       )}
+                      {p.intended_use && (
+                        <p className="text-xs text-muted-foreground italic">{p.intended_use}</p>
+                      )}
                       {unmatched && (
                         <span className="mt-1 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
                           <AlertTriangle className="h-3 w-3" />
