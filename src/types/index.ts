@@ -91,7 +91,9 @@ export type FieldName =
   | 'reference'
   | 'local_reference'
   | 'point_of_entry'
-  | 'port_of_discharge';
+  | 'port_of_discharge'
+  | 'fob_value'
+  | 'weight_unit';
 
 export type FieldStatus = 'extracted' | 'confirmed' | 'corrected';
 

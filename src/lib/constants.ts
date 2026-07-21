@@ -116,6 +116,8 @@ export const FIELD_NAME_LABELS: Record<FieldName, string> = {
   local_reference: 'Local Reference',
   point_of_entry: 'Point of Entry',
   port_of_discharge: 'Port of Discharge',
+  fob_value: 'FOB Value',
+  weight_unit: 'Weight Unit',
 };
 
 // Zero-tolerance (error severity) fields per §4.5 — any mismatch is always an error
