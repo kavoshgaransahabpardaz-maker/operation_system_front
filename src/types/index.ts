@@ -146,6 +146,10 @@ export interface DocumentProduct {
   gross_weight: string | null;
   missing_required_fields: string[] | null;
   is_ready_to_classify: boolean;
+  hs_verified: boolean;
+  hs_verified_at: string | null;
+  hs_verified_by: string | null;
+  active_genie_run_id: string | null;
   created_at: string;
 }
 
@@ -687,4 +691,32 @@ export interface PersonalizedSummary {
   summary: string;
   relevant_interests: string[];
   general_summary: string | null;
+}
+
+// ── HS Genie ──────────────────────────────────────────────────────────────
+
+export interface HsCandidate {
+  jurisdiction: string;
+  hs_code: string;
+  full_national_code: string;
+  confidence: number;
+  confidence_level: 'high' | 'medium' | 'low';
+  overall_confidence_level: 'high' | 'medium' | 'low';
+  justification: string;
+  gri_rule: string;
+  section: string;
+  chapter: number;
+  heading_code: string;
+  verified: boolean;
+  source: string;
+}
+
+export interface HsGenieRunOut {
+  run_id: string;
+  path: 'verify' | 'genie';
+  record_id: string | null;
+  input_text: string | null;
+  candidates: HsCandidate[] | null;
+  chosen_code: string | null;
+  feedback_signal: 'thumbs_up' | 'thumbs_down' | null;
 }

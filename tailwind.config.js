@@ -37,11 +37,22 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        paper: '#FAF9F5',
+        ink: '#182634',
+        genie: {
+          gold: '#C4A052',
+          'gold-light': '#F5EDD8',
+          teal: '#0D9488',
+          'teal-light': '#CCFBF1',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      fontFamily: {
+        serif: ['Georgia', 'Cambria', '"Times New Roman"', 'serif'],
       },
     },
   },
