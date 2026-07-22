@@ -2,7 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { AuthGuard } from '@/features/auth/AuthGuard';
 import { AdminGuard } from '@/features/admin/AdminGuard';
-import { SuperAdminGuard } from '@/features/superadmin/SuperAdminGuard';
+import { SaGuard } from '@/features/superadmin/SaGuard';
+import { SaShell } from '@/features/superadmin/SaShell';
+import { SaLoginPage } from '@/features/superadmin/SaLoginPage';
 import { SuperAdminPage } from '@/features/superadmin/SuperAdminPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
@@ -31,6 +33,20 @@ import { WorkspacePage } from '@/features/workspace/WorkspacePage';
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 
 export const router = createBrowserRouter([
+  // ── Super admin panel (completely separate from main app) ───────────────
+  { path: '/sa/login', element: <SaLoginPage /> },
+  {
+    element: <SaGuard />,
+    children: [
+      {
+        element: <SaShell />,
+        children: [
+          { path: '/sa', element: <SuperAdminPage /> },
+        ],
+      },
+    ],
+  },
+
   // Landing
   { path: '/', element: <LandingPage /> },
 
@@ -84,14 +100,6 @@ export const router = createBrowserRouter([
             element: <AdminGuard />,
             children: [
               { path: '/admin', element: <AdminPage /> },
-            ],
-          },
-
-          // Super Admin panel
-          {
-            element: <SuperAdminGuard />,
-            children: [
-              { path: '/superadmin', element: <SuperAdminPage /> },
             ],
           },
 

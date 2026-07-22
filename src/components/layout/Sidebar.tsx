@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Boxes, Newspaper,
-  Briefcase, LogOut, Bell, BookOpen, Globe, ShieldAlert,
+  Briefcase, LogOut, Bell, BookOpen, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -97,7 +97,7 @@ export function Sidebar() {
           ))}
         </div>
 
-        {(user?.role === 'admin' || user?.role === 'super_admin') && (
+        {user?.role === 'admin' && (
           <div className="mt-5">
             <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
               Admin
@@ -110,16 +110,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {user?.role === 'super_admin' && (
-          <div className="mt-3">
-            <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-              Platform
-            </p>
-            <div className="space-y-0.5">
-              <NavItem icon={ShieldAlert} label="Super Admin" to="/superadmin" exact />
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* User profile button with popover */}

@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { saClient as apiClient } from './sa_client';
 import type { UserRole, UserOutWithOrg, OrgOutWithStats, IntelSource, IntelJob } from '@/types';
 
 interface IntelSourceCreate {

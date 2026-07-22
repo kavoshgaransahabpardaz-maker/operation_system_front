@@ -45,7 +45,7 @@ import {
 import { toast } from 'sonner';
 import { superAdminApi } from '@/api';
 import { queryKeys } from '@/lib/queryKeys';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { saAuthApi } from '@/api/sa_auth';
 import { formatDate, formatRelative, slugify } from '@/lib/utils';
 import { ROLE_LABELS } from '@/lib/constants';
 import type { UserRole, UserOutWithOrg, OrgOutWithStats, IntelSource, IntelJob } from '@/types';
@@ -92,7 +92,7 @@ function RoleBadge({ role }: { role: UserRole }) {
 // ── UsersTab ──────────────────────────────────────────────────────────────────
 
 function UsersTab() {
-  const { data: me } = useCurrentUser();
+  const { data: me } = useQuery({ queryKey: ['sa-me'], queryFn: () => saAuthApi.me().then(r => r.data) });
   const queryClient = useQueryClient();
 
   const [emailSearch, setEmailSearch] = useState('');
