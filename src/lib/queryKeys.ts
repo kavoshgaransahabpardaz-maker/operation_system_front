@@ -4,6 +4,7 @@ export const queryKeys = {
 
   documents: (filters?: object) => ['documents', filters] as const,
   document: (id: string) => ['document', id] as const,
+  product: (id: string) => ['product', id] as const,
   classification: (docId: string) => ['classification', docId] as const,
   duplicates: (docId: string) => ['duplicates', docId] as const,
   documentFields: (docId: string) => ['documentFields', docId] as const,

@@ -718,5 +718,6 @@ export interface HsGenieRunOut {
   input_text: string | null;
   candidates: HsCandidate[] | null;
   chosen_code: string | null;
+  existing_hs_code: string | null;
   feedback_signal: 'thumbs_up' | 'thumbs_down' | null;
 }
