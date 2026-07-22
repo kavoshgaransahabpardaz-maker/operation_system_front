@@ -12,16 +12,12 @@ interface IntelSourceCreate {
 }
 
 interface SuperAdminAnalytics {
-  total_orgs: number;
-  total_users: number;
-  active_users: number;
-  total_sources: number;
-  active_sources: number;
-  total_articles: number;
-  enriched_articles: number;
-  total_jobs: number;
-  failed_jobs: number;
-  by_role: Record<string, number>;
+  organizations: { total: number };
+  users: { total: number; active: number; by_role: Record<string, number> };
+  intel_sources: { total: number; active: number };
+  intel_articles: { total: number; enriched: number };
+  intel_jobs: { total: number; failed: number };
+  generated_at: string;
 }
 
 export const superAdminApi = {

@@ -1061,16 +1061,12 @@ function JobsTab() {
 // ── AnalyticsTab ──────────────────────────────────────────────────────────────
 
 interface SuperAdminAnalytics {
-  total_orgs: number;
-  total_users: number;
-  active_users: number;
-  total_sources: number;
-  active_sources: number;
-  total_articles: number;
-  enriched_articles: number;
-  total_jobs: number;
-  failed_jobs: number;
-  by_role: Record<string, number>;
+  organizations: { total: number };
+  users: { total: number; active: number; by_role: Record<string, number> };
+  intel_sources: { total: number; active: number };
+  intel_articles: { total: number; enriched: number };
+  intel_jobs: { total: number; failed: number };
+  generated_at: string;
 }
 
 interface StatCardProps {
@@ -1106,22 +1102,22 @@ function AnalyticsTab() {
   if (isLoading) return <Spinner className="py-16" />;
   if (!analytics) return <EmptyState icon={BarChart3} title="No analytics" description="Data unavailable." />;
 
-  const byRole = analytics.by_role ?? {};
+  const byRole = analytics.users?.by_role ?? {};
   const maxRoleCount = Math.max(1, ...Object.values(byRole));
 
   return (
     <div className="space-y-8">
       {/* Stats grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label="Total Organisations" value={analytics.total_orgs} />
-        <StatCard label="Total Users" value={analytics.total_users} />
-        <StatCard label="Active Users" value={analytics.active_users} highlight="success" />
-        <StatCard label="Total Sources" value={analytics.total_sources} />
-        <StatCard label="Active Sources" value={analytics.active_sources} highlight="success" />
-        <StatCard label="Total Articles" value={analytics.total_articles} />
-        <StatCard label="Enriched Articles" value={analytics.enriched_articles} highlight="success" />
-        <StatCard label="Total Jobs" value={analytics.total_jobs} />
-        <StatCard label="Failed Jobs" value={analytics.failed_jobs} highlight={analytics.failed_jobs > 0 ? 'danger' : undefined} />
+        <StatCard label="Total Organisations" value={analytics.organizations?.total ?? 0} />
+        <StatCard label="Total Users" value={analytics.users?.total ?? 0} />
+        <StatCard label="Active Users" value={analytics.users?.active ?? 0} highlight="success" />
+        <StatCard label="Total Sources" value={analytics.intel_sources?.total ?? 0} />
+        <StatCard label="Active Sources" value={analytics.intel_sources?.active ?? 0} highlight="success" />
+        <StatCard label="Total Articles" value={analytics.intel_articles?.total ?? 0} />
+        <StatCard label="Enriched Articles" value={analytics.intel_articles?.enriched ?? 0} highlight="success" />
+        <StatCard label="Total Jobs" value={analytics.intel_jobs?.total ?? 0} />
+        <StatCard label="Failed Jobs" value={analytics.intel_jobs?.failed ?? 0} highlight={(analytics.intel_jobs?.failed ?? 0) > 0 ? 'danger' : undefined} />
       </div>
 
       {/* Users by role */}
