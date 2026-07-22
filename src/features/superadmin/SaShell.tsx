@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { ShieldAlert, LogOut } from 'lucide-react';
+import { ShieldAlert, Boxes, LogOut } from 'lucide-react';
 import { saSession } from '@/lib/sa_session';
 
 export function SaShell() {
@@ -11,45 +11,44 @@ export function SaShell() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      {/* Top bar */}
-      <header className="flex items-center gap-3 border-b border-slate-800 bg-slate-900/80 px-6 py-3 backdrop-blur">
-        <div className="flex items-center gap-2 text-red-400">
-          <ShieldAlert className="h-5 w-5" />
-          <span className="text-sm font-bold tracking-tight text-white">
-            Super Admin
-          </span>
+    <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+      {/* Sidebar — matches main app Sidebar */}
+      <aside className="flex h-full w-56 shrink-0 flex-col bg-slate-900">
+        {/* Logo */}
+        <div className="flex h-14 items-center gap-2.5 border-b border-slate-800 px-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500">
+            <Boxes className="h-4 w-4 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">Veritariff</p>
+          </div>
         </div>
 
-        <nav className="flex items-center gap-1 ml-6">
-          {[
-            { label: 'Overview', hash: 'overview' },
-            { label: 'Users', hash: 'users' },
-            { label: 'Organisations', hash: 'orgs' },
-            { label: 'Sources', hash: 'sources' },
-            { label: 'Jobs', hash: 'jobs' },
-          ].map((item) => (
-            <a
-              key={item.hash}
-              href={`#${item.hash}`}
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-            >
-              {item.label}
-            </a>
-          ))}
+        {/* Nav section label */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+            Platform
+          </p>
+          <div className="flex items-center gap-3 rounded-lg bg-white/10 px-3 py-2">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-white" />
+            <span className="text-sm font-medium text-white">Super Admin</span>
+          </div>
         </nav>
 
-        <button
-          onClick={handleLogout}
-          className="ml-auto flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Sign out
-        </button>
-      </header>
+        {/* Sign out */}
+        <div className="border-t border-slate-800 px-3 py-3">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/5"
+          >
+            <LogOut className="h-3.5 w-3.5 text-slate-500" />
+            <span className="text-xs font-medium text-slate-400">Sign out</span>
+          </button>
+        </div>
+      </aside>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
     </div>
