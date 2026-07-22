@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { ShieldAlert, LogOut } from 'lucide-react';
 import { saSession } from '@/lib/sa_session';
 
