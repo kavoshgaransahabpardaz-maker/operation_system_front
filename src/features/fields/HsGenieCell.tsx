@@ -324,12 +324,10 @@ export function HsGeniePanel({
 // ── HS code cell (inline actions inside the table row) ────────────────────────
 export function HsGenieCell({
   product,
-  canConflict,
   mismatchChips,
   onGenieOpen,
 }: {
   product: DocumentProduct;
-  canConflict: boolean;
   mismatchChips: ReactNode | null;
   onGenieOpen: (run: HsGenieRunOut) => void;
 }) {

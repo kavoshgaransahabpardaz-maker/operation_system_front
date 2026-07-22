@@ -215,7 +215,6 @@ export function ShipmentProductsPanel({ shipmentId, documents, mismatches }: Pro
                       <TableCell>
                         <HsGenieCell
                           product={p}
-                          canConflict={canConflict}
                           mismatchChips={mismatchChips}
                           onGenieOpen={(run) => openGenie(p, run)}
                         />
