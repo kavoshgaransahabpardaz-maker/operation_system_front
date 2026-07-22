@@ -31,7 +31,7 @@ function FeedbackForm({
     { value: 'other', label: 'Other' },
   ];
 
-  const otherCandidates = candidates.filter((c, i) => i > 0);
+  const otherCandidates = candidates.filter((_c, i) => i > 0);
 
   return (
     <div className="mt-3 rounded-xl border border-genie-gold/40 bg-genie-gold-light/60 p-4 flex flex-col gap-3">
